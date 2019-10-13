@@ -12,6 +12,6 @@ services:
     volumes:
       - ./django:/code              # Connects ./django in this repo to /code inside the web container
     ports:
-      - "8888:8000"                 # Binds port 8000 to container port 8000 (format "HOST:CONTAINER")
+      - "8000:8000"                 # Binds port 8000 to container port 8000 (format "HOST:CONTAINER")
     depends_on:
       - db                          # Tells Compose that 'db' needs to be started before 'web' can start
