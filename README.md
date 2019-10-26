@@ -1,13 +1,18 @@
 # CoGS Web Services
 
-This repository contains resources for building and running the web services for CoGS.
+This repository contains resources for building and running "Containerized Game Services," the web services for the [Midwestern Robotics Design Competition](http://mrdc.ec.illinois.edu/).
 
-For now, that's just Django and MongoDB running in Docker Compose with Djongo as a connector.
+For now, that's just [Django](https://www.djangoproject.com/) and [MongoDB](https://www.mongodb.com/) running in [Docker Compose](https://docs.docker.com/compose/) with [Djongo](https://nesdis.github.io/djongo/) as a connector.
 
 ## Prerequisites
 
 - [Docker CE](https://docs.docker.com/install/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+
+## Useful Documentation
+
+- [Docker Compose command-line reference](https://docs.docker.com/compose/reference/overview/)
+- [Docker Compose YAML file reference](https://docs.docker.com/compose/compose-file/)
 
 ## Running and Stopping
 
