@@ -36,7 +36,7 @@ In general, to run commands in a given service, use `docker-compose exec <servic
 
 Run these commands to start CoGS (assuming you've installed Docker and Docker Compose and cloned this repository):
 
-```bash
+```
 docker-compose up -d
 docker-compose exec web python manage.py migrate
 ```
