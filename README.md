@@ -24,7 +24,7 @@ In case this documentation is insufficient, or there are other problems with thi
 
 ### Running and Stopping
 
-Run `docker-compose up -d` in the root of this repo to start all of the CoGS services in the background, or to update the containers if they are already running.
+Run `docker-compose up -d` in the root of this repo to build images for every container and start all of the CoGS containers in the background, or to update the containers if they are already running.
 
 To stop the containers, run `docker-compose stop`. To restart them use `docker-compose start`. To stop the containers and delete them, use `docker-compose down` (note that while this does delete volume connections, it does **not** delete host files created by volumes or images, so for example the database data in `./data-db` will persist). The `down` subcommand is useful for starting from *almost* scratch, such that only data in volumes persists, but every service is completely recycled. Running `docker-compose up -d` will start them anew, but does not rebuild the images. To rebuild from the `docker-compose.yml` and `Dockerfile` you must remove the image with `docker rmi <imagename>` or `docker-compose --rmi all`
 
