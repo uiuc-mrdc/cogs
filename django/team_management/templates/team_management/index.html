@@ -12,17 +12,16 @@
             <!-- /Bootstrap Requirements -->
 
             <!--Custom Styles-->
-          
-            <link rel="stylesheet" href="styles.css">
-            {% load static %}
-            <link rel="icon" href="{% static "icons/serve.ico" %}">
+			{% load static %}
+            <link rel="stylesheet" href="{% static 'styles.css' %}">
+            <link rel="icon" href="{% static 'icons/serve.ico' %}">
             <!--/Custom-->
 
     </head>
 
     <body>
             <nav class="navbar navbar-dark navbar-expand-lg navbar-light bg-dark">
-                    <a class="navbar-brand" href="/"><img style="height: 45px; width: 45px; margin-right: 5px" src="static/icons/serve.ico"></img>MRDC Game Serve</a>
+                    <a class="navbar-brand" href="/"><img style="height: 45px; width: 45px; margin-right: 5px" src="{% static '/icons/serve.ico' %}"></img>MRDC Game Serve</a>
 
                     <!-- <a class="navbar-brand" href="#">MRDC Game Serve</a> -->
                     

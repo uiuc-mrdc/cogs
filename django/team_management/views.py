@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.db import connection
-from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import HttpResponse
 
