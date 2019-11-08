@@ -22,6 +22,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('gameX', views.gameX, name='gameX'),
 ]
 
 

@@ -1,0 +1,31 @@
+<html>
+
+<body>
+	<div class="StandardButtons">
+	{% for scoringOption in StandardButtonsList %}
+		<button class="{{ scoringOption.InputGroup }}" id="{{ scoringOption.id }}" value="0" onclick="Standard({{ scoringOption.id }}, '{{ scoringOption.actionName }}', {{ scoringOption.Limit }})">{{ scoringOption.actionName }}{% if scoringOption.Limit != 0 %} 0/{{ scoringOption.Limit }}{% endif %}</button>
+	{% endfor %}
+	</div>
+<body>
+
+
+
+<script>
+function Standard(id,name,limit){
+	button = document.getElementById(id);
+
+	if(limit == 0 || button.value < limit){
+		button.value = parseInt(button.value) + 1;
+	}
+	button.innerHTML = name + " " + button.value;
+	console.log(limit)
+	if(limit != 0) {
+		button.innerHTML += "/" + limit;
+	}
+
+}
+
+</script>
+
+
+</html>
