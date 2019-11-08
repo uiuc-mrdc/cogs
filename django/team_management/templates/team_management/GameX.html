@@ -4,6 +4,18 @@
 input[type=number] {
 	width: 3em;
 }
+
+button.up {
+	width: 0px;
+	height: 0px;
+	border-bottom: 10px solid red;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
+	border-top: 0px;
+	padding: 0px 0px;
+	background: transparent;
+	margin: 0px 0px 5px 0px;
+}
 </style>
 </head>
 
@@ -22,9 +34,9 @@ input[type=number] {
 	<div class="dragon_counters">
 		{% for dragonCounter in dragon_ball_list %}
 			<span class="{{ dragonCounter.name }}">
-				<button onclick="this.parentNode.querySelector('input[type=number]').stepDown()" >-</button>
+				<button class="down" style="border-color: {{ dragonCounter.extra_data }}" onclick="this.parentNode.querySelector('input[type=number]').stepDown()" >-</button>
 				<input type="number" min="0" step="1" value="0" style="background-color:{{ dragonCounter.extra_data }}">
-				<button onclick="this.parentNode.querySelector('input[type=number]').stepUp()" >+</button>
+				<button class="up" style="border-color: {{ dragonCounter.extra_data }}" onclick="this.parentNode.querySelector('input[type=number]').stepUp()" ></button>
 			</span>
 		{% endfor %}
 	</div>
