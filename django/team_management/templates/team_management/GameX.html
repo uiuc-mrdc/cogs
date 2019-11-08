@@ -12,7 +12,11 @@
 		</select>
 	</p>
 	
-	
+	<div class="dragon_counters">
+		{% for dragonCounter in dragon_ball_list %}
+			<input type="number" min="0" step="1" value="0" style="background-color:{{ dragonCounter.extra_data }}">
+		{% endfor %}
+	</div>
 	
 	
 	
