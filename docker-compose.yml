@@ -6,7 +6,7 @@ services:
     environment:
       MONGO_INITDB_DATABASE: djongo # Tells Mongo to initialize a database called 'djongo' on first start
     volumes:
-      - mongodbdata:/data/db          # Connects ./data-db in this repo to /data/db inside the db container
+      - mongodbdata:/data/db        # Connects ./data-db in this repo to a named Docker volume
   web:
     build: ./django                 # Tells Compose to build the 'web' service from ./django (with Dockerfile)
     volumes:
