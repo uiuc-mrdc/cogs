@@ -1,9 +1,24 @@
 <html>
 
 <body>
+	<h1>{{ game_id }}</h1>
+	
+	<p>
+		Choose Team: <select id="teamSelector">
+			<option value="0"></option>
+			{% for team in team_list %}
+				<option value="{{ team.id }}">{{ team.team_name }}</option> <!-- Change this to pick from only the teams in this game_id -->
+			{% endfor %}
+		</select>
+	</p>
+	
+	
+	
+	
+	
 	<div class="StandardButtons">
-	{% for scoringType in StandardButtonsList %}
-		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" value="0" onclick="Standard({{ scoringType.id }}, '{{ scoringType.name }}', {{ scoringType.limit }})">{{ scoringType.name }}{% if scoringType.limit != 0 %} 0/{{ scoringType.limit }}{% endif %}</button>
+	{% for scoringType in standard_buttons_list %}
+		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" value="0" onclick="Standard({{ scoringType.id }}, '{{ scoringType.name }}', {{ scoringType.limit }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
 <body>
@@ -13,16 +28,17 @@
 <script>
 function Standard(id,name,limit){
 	button = document.getElementById(id);
-
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
+		//Send data over websocket
 	}
+	drawButton(button,name,limit)
+}
+function drawButton(button,name,limit){
 	button.innerHTML = name + " " + button.value;
-	console.log(limit)
 	if(limit != 0) {
 		button.innerHTML += "/" + limit;
 	}
-
 }
 
 </script>

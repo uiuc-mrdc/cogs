@@ -13,7 +13,7 @@ class ScoringType(models.Model):
     extra_data = models.CharField(max_length=20)
     input_group = models.CharField(max_length=20)
     def __str__(self):
-        return self.action_name
+        return self.name
 
 class LiveScore(models.Model):
     action_id = models.ForeignKey(ScoringType, on_delete=models.DO_NOTHING)
