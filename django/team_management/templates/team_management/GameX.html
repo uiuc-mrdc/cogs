@@ -2,8 +2,8 @@
 
 <body>
 	<div class="StandardButtons">
-	{% for scoringOption in StandardButtonsList %}
-		<button class="{{ scoringOption.InputGroup }}" id="{{ scoringOption.id }}" value="0" onclick="Standard({{ scoringOption.id }}, '{{ scoringOption.actionName }}', {{ scoringOption.Limit }})">{{ scoringOption.actionName }}{% if scoringOption.Limit != 0 %} 0/{{ scoringOption.Limit }}{% endif %}</button>
+	{% for scoringType in StandardButtonsList %}
+		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" value="0" onclick="Standard({{ scoringType.id }}, '{{ scoringType.name }}', {{ scoringType.limit }})">{{ scoringType.name }}{% if scoringType.limit != 0 %} 0/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
 <body>

@@ -3,7 +3,7 @@ from django.db import connection
 from django.shortcuts import redirect
 from django.http import HttpResponse
 
-from .models import ScoringOptions
+from .models import ScoringType
 
 context_dict = {}
 def index(request):
@@ -11,8 +11,8 @@ def index(request):
     return render(request, "team_management/index.html", context_dict)
     
 def gameX(request):
-    #DragonBallList = ScoringOptions.objects.filter(InputGroup="Dragon Ball Counters")
+    #DragonBallList = ScoringOptions.objects.filter(input_group="Dragon Ball Counters")
     
-    StandardButtonsList = ScoringOptions.objects.filter(InputGroup="Standard")
-    context = {'StandardButtonsList':StandardButtonsList}
-    return render(request, 'team_management/gameX.html',context)
+    standard_buttons_list = ScoringType.objects.filter(input_group="Standard")
+    context = {'StandardButtonsList':standard_buttons_list}
+    return render(request, 'team_management/GameX.html',context)
