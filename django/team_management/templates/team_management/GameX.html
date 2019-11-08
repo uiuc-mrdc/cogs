@@ -1,4 +1,11 @@
 <html>
+<head>
+<style>
+input[type=number] {
+	width: 3em;
+}
+</style>
+</head>
 
 <body>
 	<h1>{{ game_id }}</h1>
@@ -14,7 +21,11 @@
 	
 	<div class="dragon_counters">
 		{% for dragonCounter in dragon_ball_list %}
-			<input type="number" min="0" step="1" value="0" style="background-color:{{ dragonCounter.extra_data }}">
+			<span class="{{ dragonCounter.name }}">
+				<button onclick="this.parentNode.querySelector('input[type=number]').stepDown()" >-</button>
+				<input type="number" min="0" step="1" value="0" style="background-color:{{ dragonCounter.extra_data }}">
+				<button onclick="this.parentNode.querySelector('input[type=number]').stepUp()" >+</button>
+			</span>
 		{% endfor %}
 	</div>
 	
