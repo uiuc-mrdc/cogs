@@ -95,16 +95,18 @@ var chatSocket = new WebSocket(
         '/ws/game/');
 
     chatSocket.onmessage = function(e) {
-        var data = JSON.parse(e.data);
-        var message = data['message'];
-		document.getElementById(1).innerHTML = message;
+        //var data = JSON.parse(e.data);
+        //var message = data['message'];
+		document.getElementById(1).innerHTML = e.data;
     };
 
 function sendAction(id, name, limit){
 	elem = document.getElementById(2);
 	message = elem.innerHTML;
+	team_id = parseInt(document.getElementById('teamSelector').value);
 	chatSocket.send(JSON.stringify({
-        'message': message
+        'action_id':id, 
+		'team_id':team_id
     }));
 }
 
