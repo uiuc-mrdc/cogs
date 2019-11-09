@@ -104,6 +104,7 @@ function sendAction(id, name, limit){
 	elem = document.getElementById(2);
 	message = elem.innerHTML;
 	team_id = parseInt(document.getElementById('teamSelector').value);
+	console.log(team_id);
 	chatSocket.send(JSON.stringify({
         'action_id':id, 
 		'team_id':team_id
