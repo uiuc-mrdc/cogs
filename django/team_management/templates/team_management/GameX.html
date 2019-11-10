@@ -77,13 +77,16 @@ button.down {
 
 <script>
 function Standard(id,name,limit){
-	button = document.getElementById(id);
-	if(limit == 0 || button.value < limit){
-		button.value = parseInt(button.value) + 1;
-		sendAction(id,name,limit);
-	}
-	drawButton(button,name,limit)
-}
+	if(document.getElementById('teamSelector').value == '0'){
+		alert("Please choose a team");
+	} else {
+		button = document.getElementById(id);
+		if(limit == 0 || button.value < limit){
+			button.value = parseInt(button.value) + 1;
+			sendAction(id,name,limit);
+		}
+		drawButton(button,name,limit)
+}}
 function drawButton(button,name,limit){
 	button.innerHTML = name + " " + button.value;
 	if(limit != 0) {
@@ -106,7 +109,6 @@ function sendAction(id, name, limit){
 	elem = document.getElementById(2);
 	message = elem.innerHTML;
 	team_id = parseInt(document.getElementById('teamSelector').value);
-	console.log(team_id);
 	chatSocket.send(JSON.stringify({
         'action_id':id, 
 		'team_id':team_id
