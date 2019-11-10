@@ -21,7 +21,7 @@
 			<span class="{{ dragonCounter.name }}" style="position:relative">
 				<button class="down" style="border-top: 15px solid {{ dragonCounter.extra_data }}" onclick="this.parentNode.querySelector('input[type=number]').stepDown()" ></button>
 				<button class="up" style="border-bottom: 15px solid {{ dragonCounter.extra_data }}" onclick="this.parentNode.querySelector('input[type=number]').stepUp()" ></button>
-				<input type="number" min="0" step="1" value="0" style="background-color:{{ dragonCounter.extra_data }}">
+				<input type="number" min="0" step="1" value="0">
 			</span>
 		{% endfor %}
 		<button>Update Counts on Server</button>
