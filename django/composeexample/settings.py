@@ -81,7 +81,8 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'djongo',
         'HOST': 'db',
-        'PORT': 27017
+        'PORT': 27017,
+        'CONN_MAX_AGE': 120
     }
 }
 
