@@ -1,8 +1,15 @@
+body {
+	font-size: 200%;
+}
+
 input[type=number] {
 	width: 10vw;
+	height: 1.5em;
 	border:none;
 	text-align: center;
-	font-size: 200%
+	font-size: 1em;
+	padding: .25em;
+
 }
 
 input[type=number]::-webkit-inner-spin-button, 
@@ -12,6 +19,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 button.up {
+	font-size: 1em;
 	width: 0px;
 	height: 0px;
 	border-left: 5vw solid transparent;
@@ -19,12 +27,13 @@ button.up {
 	border-top: 0px;
 	padding: 0px 0px;
 	background: transparent;
-	margin: 0px 0px 5px 0px;
+	margin: 0px;
 	position: absolute;
-	top: -32px;
+	top: -1em;
 }
 
 button.down {
+	font-size: 1em;
 	width: 0px;
 	height: 0px;
 	border-left: 5vw solid transparent;
@@ -32,11 +41,23 @@ button.down {
 	border-bottom: 0px;
 	padding: 0px 0px;
 	background: transparent;
-	margin: 0px 0px 5px 0px;
+	margin: 0px;
 	position: absolute;
-	top: 24px;
+	top: 1.125em;
 }
 
 .dragon_counters {
 	margin: 20px 0px 20px 0px;
+}
+
+.Standard {
+  background-color: #008CBA; /*Blue*/
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1em;
+  border-radius: .5em
 }
