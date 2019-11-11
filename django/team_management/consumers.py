@@ -12,13 +12,13 @@ class GameConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        action_id = ScoringType.objects.get(pk=text_data_json['action_id'])
-        team_id = Team.objects.get(pk=text_data_json['team_id'])
+        scoring_type = ScoringType.objects.get(pk=text_data_json['scoringType_id'])
+        team = Team.objects.get(pk=text_data_json['team_id'])
         print(text_data_json)
         #self.send(text_data=json.dumps({
         #    'message': message
         #}))
-        item = LiveScore(action_id=action_id, time=timezone.now(), team_id=team_id)
+        item = LiveScore(scoring_type=scoring_type, time=timezone.now(), team=team)
         item.save()
         
         print(LiveScore.objects.all())

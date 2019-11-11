@@ -16,8 +16,21 @@ class ScoringType(models.Model):
         return self.name
 
 class LiveScore(models.Model):
-    action_id = models.ForeignKey(ScoringType, on_delete=models.DO_NOTHING)
+    scoring_type = models.ForeignKey(ScoringType, on_delete=models.DO_NOTHING)
     time = models.DateTimeField('date published')
-    team_id = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
+    team = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
     def __str__(self):
-        return ", ".join([str(self.action_id),str(self.team_id)])
+        return ", ".join([str(self.scoring_type),str(self.team)])
+
+class Game(models.Model):
+    teamOne = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team1")
+    score1 = models.IntegerField(default=0)
+    team2 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team2")
+    score2 = models.IntegerField(default=0)
+    team3 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team3")
+    score3 = models.IntegerField(default=0)
+    team4 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team4")
+    score4 = models.IntegerField(default=0)
+    start_time = models.DateTimeField('date published')
+    finished = models.BooleanField(default=False)
+    special_name = models.CharField(max_length=25,default = "")

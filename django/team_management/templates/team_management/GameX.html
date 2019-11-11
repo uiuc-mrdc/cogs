@@ -71,11 +71,9 @@ var chatSocket = new WebSocket(
     };
 
 function sendAction(id, name, limit){
-	elem = document.getElementById(2);
-	message = elem.innerHTML;
 	team_id = parseInt(document.getElementById('teamSelector').value);
 	chatSocket.send(JSON.stringify({
-        'action_id':id, 
+        'scoringType_id':id, 
 		'team_id':team_id
     }));
 }
