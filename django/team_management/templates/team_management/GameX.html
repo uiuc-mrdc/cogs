@@ -1,10 +1,12 @@
-<html>
-<head>
+{% extends "team_management/index.html" %}
+
+{% block css %}
 	{% load static %}
     <link rel="stylesheet" href="{% static 'team_management/gameX.css' %}">
-</head>
+{% endblock %}
 
-<body>
+
+{% block body %}
 	<h1>{{ game_id }}</h1>
 	
 	<p>
@@ -36,11 +38,12 @@
 	</div>
 	<div id="testText">
 	</div>
-<body>
+{% endblock %}
 
 
 
-<script>
+
+{% block script %}
 function Standard(id,name,limit){
 	if(document.getElementById('teamSelector').value == '0'){
 		alert("Please choose a team");
@@ -82,8 +85,4 @@ function sendAction(id, name, limit){
         console.error('Chat socket closed unexpectedly');
     };
 
-
-</script>
-
-
-</html>
+{% endblock %}

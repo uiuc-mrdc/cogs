@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-
+	
             <title>MRDC Team Management</title>
 
             <!-- Bootstrap Requirements -->
@@ -12,14 +12,17 @@
             <!-- /Bootstrap Requirements -->
 
             <!--Custom Styles-->
+			{% block css %}
 			{% load static %}
             <link rel="stylesheet" href="{% static 'styles.css' %}">
             <link rel="icon" href="{% static 'icons/serve.ico' %}">
+			{% endblock %}
             <!--/Custom-->
 
     </head>
 
     <body>
+			{% block navbar %}
             <nav class="navbar navbar-dark navbar-expand-lg navbar-light bg-dark">
                     <a class="navbar-brand" href="/"><img style="height: 45px; width: 45px; margin-right: 5px" src="{% static '/icons/serve.ico' %}"></img>MRDC Game Serve</a>
 
@@ -42,5 +45,13 @@
                       </ul>
                     </div>
             </nav>
+			{% endblock %}
+			
+			{% block body %}
+			{% endblock %}
     </body>
+	<script>
+	{% block script %}
+	{% endblock %}
+	</script>
 </html>
