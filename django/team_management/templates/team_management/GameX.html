@@ -37,6 +37,8 @@
 	</div>
 	<div id="testText">
 	</div>
+	<div id="deleteButtons">
+	</div>
 {% endblock %}
 
 
@@ -66,9 +68,12 @@ var chatSocket = new WebSocket(
         '/ws/game/');
 
     chatSocket.onmessage = function(e) {
-        //var data = JSON.parse(e.data);
+        var data = JSON.parse(e.data);
         //var message = data['message'];
-		document.getElementById("testText").innerHTML += e.data;
+		document.getElementById("testText").innerHTML += 'success!';
+		document.getElementById("deleteButtons").innerHTML += "<button>Delete</button> " + data['liveScore_id'] + " | " + 
+																data['time'] + " | " + data['scoringType_name'] +
+																" | " + data['team_name'];
     };
 
 function sendAction(id, value){

@@ -21,6 +21,9 @@ class GameConsumer(WebsocketConsumer):
         item = LiveScore(scoring_type=scoring_type, time=timezone.now(), team=team)
         item.save()
         
-        print(LiveScore.objects.all())
-        
-        self.send('success!')
+        self.send(text_data=json.dumps({
+            'team_name':team.team_name,
+            'liveScore_id':item.id,
+            'scoringType_name':scoring_type.name,
+            'time':str(item.time),
+        }))
