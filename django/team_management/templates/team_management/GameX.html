@@ -21,15 +21,14 @@
 	<div class="dragon_counters">
 		{% for dragonCounter in dragon_ball_list %}
 			<span class="{{ dragonCounter.name }}" style="position:relative">
-				<button class="down" style="border-top: 1em solid {{ dragonCounter.extra_data }}" onclick="this.parentNode.querySelector('input[type=number]').stepDown()" ></button>
-				<button class="up" style="border-bottom: 1em solid {{ dragonCounter.extra_data }}" onclick="this.parentNode.querySelector('input[type=number]').stepUp()" ></button>
-				<input type="number" min="0" step="1" value="0">
+				<button class="down" style="border-top: 1em solid {{ dragonCounter.extra_data }}" onclick="counter({{ dragonCounter.id }}, -1)" ></button>
+				<button class="up" style="border-bottom: 1em solid {{ dragonCounter.extra_data }}" onclick="counter({{ dragonCounter.id }}, 1)" ></button>
+				<input type="number" min="0" step="1" value="0" id="{{ dragonCounter.id }}">
 			</span>
 		{% endfor %}
-		<button>Update Counts on Server</button>
 	</div>
 	
-	
+
 	
 	<div class="StandardButtons">
 	{% for scoringType in standard_buttons_list %}
@@ -42,19 +41,18 @@
 
 
 
-
+<script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
 function Standard(id,name,limit){
-	if(document.getElementById('teamSelector').value == '0'){
-		alert("Please choose a team");
-	} else {
-		button = document.getElementById(id);
-		if(limit == 0 || button.value < limit){
-			button.value = parseInt(button.value) + 1;
-			sendAction(id,name,limit);
-		}
-		drawButton(button,name,limit)
-}}
+	checkTeam()
+	button = document.getElementById(id);
+	if(limit == 0 || button.value < limit){
+		button.value = parseInt(button.value) + 1;
+		sendAction(id, parseInt(button.value));
+	}
+	drawButton(button,name,limit);
+}
+
 function drawButton(button,name,limit){
 	button.innerHTML = name + " " + button.value;
 	if(limit != 0) {
@@ -73,16 +71,37 @@ var chatSocket = new WebSocket(
 		document.getElementById("testText").innerHTML += e.data;
     };
 
-function sendAction(id, name, limit){
-	team_id = parseInt(document.getElementById('teamSelector').value);
+function sendAction(id, value){
+	team_id = document.getElementById('teamSelector').value
 	chatSocket.send(JSON.stringify({
         'scoringType_id':id, 
-		'team_id':team_id
+		'team_id':team_id,
+		'value':value,
     }));
 }
 
     chatSocket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
     };
+function counter(id, direction) {
+	checkTeam();
+	inputElem = document.getElementById(id);
+	if (direction == 1) {
+		inputElem.value = parseInt(inputElem.value) + 1;
+	} else {
+		if (inputElem.value > 0){
+			inputElem.value = parseInt(inputElem.value) - 1;
+		}
+	}
+	sendAction(id, parseInt(inputElem.value));
+}
+
+function checkTeam(){
+	if(document.getElementById('teamSelector').value == '0'){
+		alert("Please choose a team");
+		throw new Error("Choose a team before sending data")
+	}
+}
 
 {% endblock %}
+</script>
