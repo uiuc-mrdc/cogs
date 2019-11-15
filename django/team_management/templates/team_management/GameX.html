@@ -51,9 +51,22 @@ function standard(id){
 	limit = button.getAttribute('data-limit');
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
-		sendAction(id, parseInt(button.value), 'addLiveScore');
+		sendAction(id, parseInt(button.value), 'standardLiveScore');
 	}
 	drawButton(button);
+}
+
+function counter(id, direction) {
+	checkTeam();
+	inputElem = document.getElementById(id);
+	if (direction == 1) {
+		inputElem.value = parseInt(inputElem.value) + 1;
+	} else {
+		if (inputElem.value > 0){
+			inputElem.value = parseInt(inputElem.value) - 1;
+		}
+	}
+	sendAction(id, parseInt(inputElem.value), 'counterLiveScore');
 }
 
 function drawButton(button){
@@ -64,7 +77,6 @@ function drawButton(button){
 		button.innerHTML += "/" + limit;
 	}
 }
-
 
 var chatSocket = new WebSocket(
         'ws://' + window.location.host +
@@ -107,19 +119,6 @@ function deleteInDb(ptag){
 	drawButton(button);
 	
 	ptag.parentNode.removeChild(ptag);
-}
-
-function counter(id, direction) {
-	checkTeam();
-	inputElem = document.getElementById(id);
-	if (direction == 1) {
-		inputElem.value = parseInt(inputElem.value) + 1;
-	} else {
-		if (inputElem.value > 0){
-			inputElem.value = parseInt(inputElem.value) - 1;
-		}
-	}
-	sendAction(id, parseInt(inputElem.value), 'addLiveScore');
 }
 
 function checkTeam(){
