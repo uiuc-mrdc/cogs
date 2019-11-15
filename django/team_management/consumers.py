@@ -12,9 +12,13 @@ class GameConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        scoring_type = ScoringType.objects.get(pk=text_data_json['scoringType_id'])
-        team = Team.objects.get(pk=text_data_json['team_id'])
-        print(text_data_json)
+        func = self.switcher.get(text_data_json['type']) 
+        return func(self, text_data_json) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
+        
+    def addLiveScore(self, json_data):
+        scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
+        team = Team.objects.get(pk=json_data['team_id'])
+        print(json_data)
         #self.send(text_data=json.dumps({
         #    'message': message
         #}))
@@ -27,3 +31,12 @@ class GameConsumer(WebsocketConsumer):
             'scoringType_name':scoring_type.name,
             'time':str(item.time),
         }))
+    
+    def deleteLiveScore(self, json_data):
+        print(json_data)
+        LiveScore.objects.get(pk=json_data['scoringType_id']).delete() #Passes LiveScore.id as ScoringType.id to save data space
+    
+    switcher = {
+        'delete':deleteLiveScore,
+        'addLiveScore':addLiveScore,
+    }

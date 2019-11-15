@@ -2,7 +2,9 @@
 
 {% block css %}
 	{% load static %}
+	{{ block.super }}
     <link rel="stylesheet" href="{% static 'team_management/gameX.css' %}">
+	
 {% endblock %}
 
 
@@ -32,25 +34,23 @@
 	
 	<div class="StandardButtons">
 	{% for scoringType in standard_buttons_list %}
-		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" value="0" onclick="Standard({{ scoringType.id }}, '{{ scoringType.name }}', {{ scoringType.limit }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
+		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" value="0" onclick="standard({{ scoringType.id }}, '{{ scoringType.name }}', {{ scoringType.limit }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
-	<div id="testText">
-	</div>
-	<div id="deleteButtons">
-	</div>
+	<div id="testText"></div>
+	<div id="deleteButtons"></div>
 {% endblock %}
 
 
 
 <script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
-function Standard(id,name,limit){
+function standard(id,name,limit){
 	checkTeam()
 	button = document.getElementById(id);
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
-		sendAction(id, parseInt(button.value));
+		sendAction(id, parseInt(button.value), 'addLiveScore');
 	}
 	drawButton(button,name,limit);
 }
@@ -71,23 +71,37 @@ var chatSocket = new WebSocket(
         var data = JSON.parse(e.data);
         //var message = data['message'];
 		document.getElementById("testText").innerHTML += 'success!';
-		document.getElementById("deleteButtons").innerHTML += "<button>Delete</button> " + data['liveScore_id'] + " | " + 
-																data['time'] + " | " + data['scoringType_name'] +
-																" | " + data['team_name'];
+		document.getElementById("deleteButtons").innerHTML += 
+			"<p data-id='" + data['liveScore_id'] + "'>" +
+			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
+			data['liveScore_id'] + " | " + 
+			data['time'] + " | " + 
+			data['scoringType_name'] + " | " +
+			data['team_name'] + 
+			"</p>";
+    };
+	
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
 
-function sendAction(id, value){
+function sendAction(id, value, type){
 	team_id = document.getElementById('teamSelector').value
 	chatSocket.send(JSON.stringify({
+		'type':type,
         'scoringType_id':id, 
 		'team_id':team_id,
 		'value':value,
     }));
 }
 
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
-    };
+function deleteInDb(ptag){
+	console.log(ptag.getAttribute('data-id'));
+	sendAction(ptag.getAttribute('data-id'), 0, 'delete');
+	ptag.parentNode.removeChild(ptag);
+}
+
 function counter(id, direction) {
 	checkTeam();
 	inputElem = document.getElementById(id);
@@ -98,7 +112,7 @@ function counter(id, direction) {
 			inputElem.value = parseInt(inputElem.value) - 1;
 		}
 	}
-	sendAction(id, parseInt(inputElem.value));
+	sendAction(id, parseInt(inputElem.value), 'addLiveScore');
 }
 
 function checkTeam(){
@@ -109,4 +123,4 @@ function checkTeam(){
 }
 
 {% endblock %}
-</script>
+</script> this tag is useless, and just for text highlighting properly in editors
