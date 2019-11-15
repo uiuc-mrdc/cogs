@@ -29,6 +29,7 @@ class GameConsumer(WebsocketConsumer):
             'team_name':team.team_name,
             'liveScore_id':item.id,
             'scoringType_name':scoring_type.name,
+            'scoringType_id':scoring_type.id,
             'time':str(item.time),
         }))
     

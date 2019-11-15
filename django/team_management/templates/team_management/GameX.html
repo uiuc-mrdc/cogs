@@ -34,7 +34,7 @@
 	
 	<div class="StandardButtons">
 	{% for scoringType in standard_buttons_list %}
-		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" value="0" onclick="standard({{ scoringType.id }}, '{{ scoringType.name }}', {{ scoringType.limit }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
+		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
 	<div id="testText"></div>
@@ -45,17 +45,20 @@
 
 <script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
-function standard(id,name,limit){
+function standard(id){
 	checkTeam()
 	button = document.getElementById(id);
+	limit = button.getAttribute('data-limit');
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
 		sendAction(id, parseInt(button.value), 'addLiveScore');
 	}
-	drawButton(button,name,limit);
+	drawButton(button);
 }
 
-function drawButton(button,name,limit){
+function drawButton(button){
+	limit = button.getAttribute('data-limit');
+	name = button.getAttribute('data-name');
 	button.innerHTML = name + " " + button.value;
 	if(limit != 0) {
 		button.innerHTML += "/" + limit;
@@ -72,7 +75,7 @@ var chatSocket = new WebSocket(
         //var message = data['message'];
 		document.getElementById("testText").innerHTML += 'success!';
 		document.getElementById("deleteButtons").innerHTML += 
-			"<p data-id='" + data['liveScore_id'] + "'>" +
+			"<p data-liveScore_id='" + data['liveScore_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
 			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
 			data['liveScore_id'] + " | " + 
 			data['time'] + " | " + 
@@ -97,8 +100,12 @@ function sendAction(id, value, type){
 }
 
 function deleteInDb(ptag){
-	console.log(ptag.getAttribute('data-id'));
-	sendAction(ptag.getAttribute('data-id'), 0, 'delete');
+	sendAction(ptag.getAttribute('data-liveScore_id'), 0, 'delete');
+	
+	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
+	button.value = button.value - 1;
+	drawButton(button);
+	
 	ptag.parentNode.removeChild(ptag);
 }
 
