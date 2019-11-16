@@ -60,11 +60,9 @@ function counter(id, direction) {
 	checkTeam();
 	inputElem = document.getElementById(id);
 	if (direction == 1) {
-		inputElem.value = parseInt(inputElem.value) + 1;
+		inputElem.stepUp();
 	} else {
-		if (inputElem.value > 0){
-			inputElem.value = parseInt(inputElem.value) - 1;
-		}
+		inputElem.stepDown();
 	}
 	sendAction(id, parseInt(inputElem.value), 'counterLiveScore');
 }
