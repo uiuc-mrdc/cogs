@@ -41,7 +41,9 @@ class GameConsumer(WebsocketConsumer):
         #note there is no response, since it doesn't need a delete button
     
     def deleteAction(self, json_data):
-        Action.objects.get(pk=json_data['scoringType_id']).delete() #Passes LiveScore.id as ScoringType.id to save data space
+        action = Action.objects.get(pk=json_data['scoringType_id']) #Passes LiveScore.id as ScoringType.id to save data space
+        action.deleted = True
+        action.save()
         
     switcher = { #must be defined after the functions
         'delete':deleteAction,

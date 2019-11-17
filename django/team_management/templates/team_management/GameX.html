@@ -117,7 +117,7 @@ function deleteInDb(ptag){
 	button.value = button.value - 1;
 	drawButton(button);
 	
-	ptag.parentNode.removeChild(ptag);
+	ptag.style.textDecoration = 'line-through'
 }
 
 function checkTeam(){
