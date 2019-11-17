@@ -21,11 +21,11 @@
 	</p>
 	
 	<div class="dragon_counters">
-		{% for dragonCounter in dragon_ball_list %}
-			<span class="{{ dragonCounter.name }}" style="position:relative">
-				<button class="down" style="border-top: 1em solid {{ dragonCounter.extra_data }}" onclick="counter({{ dragonCounter.id }}, -1)" ></button>
-				<button class="up" style="border-bottom: 1em solid {{ dragonCounter.extra_data }}" onclick="counter({{ dragonCounter.id }}, 1)" ></button>
-				<input type="number" min="0" step="1" value="0" id="{{ dragonCounter.id }}">
+		{% for counter in counter_list %}
+			<span class="{{ counter.name }}" style="position:relative">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
+				<input type="number" min="0" step="1" value="0" id="{{ counter.id }}">
 			</span>
 		{% endfor %}
 	</div>
@@ -51,7 +51,7 @@ function standard(id){
 	limit = button.getAttribute('data-limit');
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
-		sendAction(id, parseInt(button.value), 'standardLiveScore');
+		sendAction(id, parseInt(button.value), 'addStandardAction');
 	}
 	drawButton(button);
 }
@@ -64,7 +64,7 @@ function counter(id, direction) {
 	} else {
 		inputElem.stepDown();
 	}
-	sendAction(id, parseInt(inputElem.value), 'counterLiveScore');
+	sendAction(id, parseInt(inputElem.value), 'addCounterAction');
 }
 
 function drawButton(button){
@@ -85,9 +85,9 @@ var chatSocket = new WebSocket(
         //var message = data['message'];
 		document.getElementById("testText").innerHTML += 'success!';
 		document.getElementById("deleteButtons").innerHTML += 
-			"<p data-liveScore_id='" + data['liveScore_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
+			"<p data-action_id='" + data['action_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
 			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
-			data['liveScore_id'] + " | " + 
+			data['action_id'] + " | " + 
 			data['time'] + " | " + 
 			data['scoringType_name'] + " | " +
 			data['team_name'] + 
@@ -106,11 +106,12 @@ function sendAction(id, value, type){
         'scoringType_id':id, 
 		'team_id':team_id,
 		'value':value,
+		'game_id':{{ game_id }},
     }));
 }
 
 function deleteInDb(ptag){
-	sendAction(ptag.getAttribute('data-liveScore_id'), 0, 'delete');
+	sendAction(ptag.getAttribute('data-action_id'), 0, 'delete');
 	
 	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
 	button.value = button.value - 1;
