@@ -31,10 +31,11 @@ class Game(models.Model):
     
 class Action(models.Model):
     scoring_type = models.ForeignKey(ScoringType, on_delete=models.DO_NOTHING)
-    time = models.DateTimeField('date published')
+    time = models.DateTimeField()
     team = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
     game = models.ForeignKey(Game, on_delete=models.DO_NOTHING)
     multiplier = models.PositiveSmallIntegerField(default=1)
+    upDown = models.BooleanField(default=1)
     deleted = models.BooleanField(default=False)
     def __str__(self):
-        return ", ".join(["Game " + str(self.game.id), str(self.scoring_type),str(self.team)])
+        return ", ".join(["Game " + str(self.game.id), str(self.scoring_type), str(self.team)])

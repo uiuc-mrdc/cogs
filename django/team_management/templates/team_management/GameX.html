@@ -61,10 +61,11 @@ function counter(id, direction) {
 	inputElem = document.getElementById(id);
 	if (direction == 1) {
 		inputElem.stepUp();
+		sendAction(id, 1, 'addCounterAction');
 	} else {
 		inputElem.stepDown();
+		sendAction(id, 0, 'addCounterAction');
 	}
-	sendAction(id, parseInt(inputElem.value), 'addCounterAction');
 }
 
 function drawButton(button){
@@ -111,7 +112,12 @@ function sendAction(id, value, type){
 }
 
 function deleteInDb(ptag){
-	sendAction(ptag.getAttribute('data-action_id'), 0, 'delete');
+	
+	chatSocket.send(JSON.stringify({
+		'type':'delete',
+		'action_id':ptag.getAttribute('data-action_id'),
+	}));
+	//sendAction(ptag.getAttribute('data-action_id'), 0, 'delete');
 	
 	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
 	button.value = button.value - 1;

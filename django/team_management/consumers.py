@@ -36,12 +36,13 @@ class GameConsumer(WebsocketConsumer):
         team = Team.objects.get(pk=json_data['team_id'])
         game = Game.objects.get(pk=json_data['game_id'])
         #multiplier = ?????
-        action = Action(scoring_type=scoring_type, time=timezone.now(), team=team, game=game)
+        direction = json_data['value']
+        action = Action(scoring_type=scoring_type, time=timezone.now(), team=team, game=game, upDown=direction)
         action.save()
         #note there is no response, since it doesn't need a delete button
     
     def deleteAction(self, json_data):
-        action = Action.objects.get(pk=json_data['scoringType_id']) #Passes LiveScore.id as ScoringType.id to save data space
+        action = Action.objects.get(pk=json_data['action_id'])
         action.deleted = True
         action.save()
         
