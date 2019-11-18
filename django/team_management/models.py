@@ -3,6 +3,7 @@ from djongo import models
 class Team(models.Model):
     team_name = models.CharField(max_length=30)
     school_name = models.CharField(max_length=500)
+    #logo?
     def __str__(self):
         return self.team_name
 
@@ -28,6 +29,13 @@ class Game(models.Model):
     end_time = models.DateTimeField()
     finished = models.BooleanField(default=False)
     special_name = models.PositiveSmallIntegerField(default=0)
+    
+class GameParticipant(models.Model):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
+    score = models.IntegerField(default=0)
+    def __str__(self):
+        return ", ".join(["Game " + str(self.game.id), self.team.team_name])
     
 class Action(models.Model):
     scoring_type = models.ForeignKey(ScoringType, on_delete=models.DO_NOTHING)

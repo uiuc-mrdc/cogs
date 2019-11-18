@@ -14,8 +14,8 @@
 	<p>
 		Choose Team: <select id="teamSelector">
 			<option value="0"></option>
-			{% for team in team_list %}
-				<option value="{{ team.id }}">{{ team.team_name }}</option> <!-- Change this to pick from only the teams in this game_id -->
+			{% for participant in participant_list %}
+				<option value="{{ participant.team.id }}">{{ participant.team.team_name }}</option> <!-- Change this to pick from only the teams in this game_id -->
 			{% endfor %}
 		</select>
 	</p>
