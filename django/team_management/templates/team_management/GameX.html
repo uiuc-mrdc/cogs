@@ -123,7 +123,9 @@ function deleteInDb(ptag){
 	button.value = button.value - 1;
 	drawButton(button);
 	
-	ptag.style.textDecoration = 'line-through'
+	ptag.style.textDecoration = 'line-through';
+	ptag.style.opacity = '75%';
+	ptag.querySelector('button').remove();
 }
 
 function checkTeam(){
