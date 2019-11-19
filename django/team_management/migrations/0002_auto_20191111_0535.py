@@ -26,6 +26,12 @@ def initializeDb(apps, schema_editor):
     GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1))
     GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1))
     
+    from django.contrib.auth.models import User
+    superuser = User.objects.create_superuser(
+        username = "MRDC",
+        email = "test@test.com",
+        password = "password", #Obviously don't leave this as is
+        )
     
 class Migration(migrations.Migration):
 
