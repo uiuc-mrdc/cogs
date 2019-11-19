@@ -37,6 +37,17 @@
 		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
+	
+	<div class="MultiplierButtons">
+		<label class="checkbox-label">
+			<input type="checkbox">
+			<span class="checkbox-custom">Flying</span>
+		</label>
+		<label class="checkbox-label">
+			<input type="checkbox">
+			<span class="checkbox-custom">Autonomous</span>
+		</label>
+	</div>
 	<div id="testText"></div>
 	<div id="deleteButtons"></div>
 {% endblock %}
