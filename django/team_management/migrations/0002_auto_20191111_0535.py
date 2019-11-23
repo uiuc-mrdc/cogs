@@ -6,10 +6,10 @@ from team_management.models import ScoringType, Team, Game, GameParticipant
 
 
 def initializeDb(apps, schema_editor):
-    Team.objects.create(team_name="Mechabytes", school_name="UIUC")
-    Team.objects.create(team_name="Marvin", school_name="Valpo")
-    Team.objects.create(team_name="ITR Roslund", school_name="IIT")
-    Team.objects.create(team_name="Scotty Bees", school_name="College of Dupage")
+    Team.objects.create(team_name="Lion", school_name="UIUC")
+    Team.objects.create(team_name="Phoenix", school_name="Valpo")
+    Team.objects.create(team_name="Hydra", school_name="IIT")
+    Team.objects.create(team_name="Unicorn", school_name="College of Dupage")
     
     ScoringType.objects.create(name="Red Dragon ball", limit=0, value=16, extra_data="#FF0000", input_style="Counter")
     ScoringType.objects.create(name="Blue Dragon ball", limit=0, value=16, extra_data="#0000FF", input_style="Counter")
