@@ -21,5 +21,5 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('games/', views.games, name='games'),
-    path('game<int:game_id>/', views.gameX, name='gameX'),
+    path('games/<int:game_id>/', views.gameX, name='gameX'),
 ]
