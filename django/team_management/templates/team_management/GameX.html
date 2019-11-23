@@ -85,7 +85,6 @@ function counter(id, direction) {
 var multiplier = 1;
 
 function updateMultiplier(){
-	console.log("upsateasd");
 	flying = document.getElementById("flyingCheck");
 	autonomous = document.getElementById("autonomousCheck");
 	store = document.getElementById("storeCheck");
@@ -94,7 +93,6 @@ function updateMultiplier(){
 	if (flying.checked){multiplier *= 2}
 	if (store.checked){multiplier *= 3/4}
 	if (autonomous.checked){multiplier*=4}
-	console.log(multiplier);
 }
 
 function drawButton(button){
