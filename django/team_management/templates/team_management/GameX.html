@@ -40,11 +40,15 @@
 	
 	<div class="MultiplierButtons">
 		<label class="checkbox-label">
-			<input type="checkbox">
+			<input type="checkbox" id="flyingCheck" onclick="updateMultiplier()">
 			<span class="checkbox-custom">Flying</span>
 		</label>
 		<label class="checkbox-label">
-			<input type="checkbox">
+			<input type="checkbox" id="storeCheck" onclick="updateMultiplier()">
+			<span class="checkbox-custom">Store-Bought</span>
+		</label>
+		<label class="checkbox-label">
+			<input type="checkbox" id="autonomousCheck" onclick="updateMultiplier()">
 			<span class="checkbox-custom">Autonomous</span>
 		</label>
 	</div>
@@ -77,6 +81,20 @@ function counter(id, direction) {
 		inputElem.stepDown();
 		sendAction(id, 0, 'addCounterAction');
 	}
+}
+var multiplier = 1;
+
+function updateMultiplier(){
+	console.log("upsateasd");
+	flying = document.getElementById("flyingCheck");
+	autonomous = document.getElementById("autonomousCheck");
+	store = document.getElementById("storeCheck");
+	
+	multiplier = 1;
+	if (flying.checked){multiplier *= 2}
+	if (store.checked){multiplier *= 3/4}
+	if (autonomous.checked){multiplier*=4}
+	console.log(multiplier);
 }
 
 function drawButton(button){
