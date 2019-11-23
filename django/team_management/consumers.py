@@ -19,8 +19,13 @@ class GameConsumer(WebsocketConsumer):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
         team = Team.objects.get(pk=json_data['team_id'])
         game = Game.objects.get(pk=json_data['game_id'])
-        #multiplier = ?????
-        action = Action(scoring_type=scoring_type, time=timezone.now(), team=team, game=game)
+        multiplier = json_data['multiplier']
+        action = Action(
+            scoring_type = scoring_type, 
+            time = timezone.now(), 
+            team = team, 
+            multiplier = multiplier,
+            game = game)
         action.save()
         
         self.send(text_data=json.dumps({

@@ -78,8 +78,10 @@ function counter(id, direction) {
 		inputElem.stepUp();
 		sendAction(id, 1, 'addCounterAction');
 	} else {
-		inputElem.stepDown();
-		sendAction(id, 0, 'addCounterAction');
+		if (inputElem.value >0){
+			inputElem.stepDown();
+			sendAction(id, 0, 'addCounterAction');
+		}
 	}
 }
 var multiplier = 1;
@@ -134,6 +136,7 @@ function sendAction(id, value, type){
         'scoringType_id':id, 
 		'team_id':team_id,
 		'value':value,
+		'multiplier':multiplier,
 		'game_id':{{ game_id }},
     }));
 }

@@ -42,7 +42,7 @@ class Action(models.Model):
     time = models.DateTimeField()
     team = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
     game = models.ForeignKey(Game, on_delete=models.DO_NOTHING)
-    multiplier = models.PositiveSmallIntegerField(default=1)
+    multiplier = models.DecimalField(max_digits=2, decimal_places=1, default=1)
     upDown = models.BooleanField(default=1)
     deleted = models.BooleanField(default=False)
     def __str__(self):
