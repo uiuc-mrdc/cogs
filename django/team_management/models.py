@@ -1,4 +1,4 @@
-from djongo import models
+from django.db import models
 
 class Blog(models.Model):
     name = models.CharField(max_length=100)
@@ -9,9 +9,5 @@ class Blog(models.Model):
         abstract = True
 
 class Entry(models.Model):
-    blog = models.EmbeddedModelField(
-        model_container=Blog,
-    )
-
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     headline = models.CharField(max_length=255)
-    objects = models.DjongoManager()
