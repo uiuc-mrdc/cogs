@@ -19,7 +19,7 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Open Treasury", limit=1, value=40, extra_data="", input_style="Standard")
     ScoringType.objects.create(name="Infinite Example", limit=0, value=1, extra_data="", input_style="Standard")
     
-    Game.objects.create(team1=Team.objects.get(pk=1), team2=Team.objects.get(pk=2), team3=Team.objects.get(pk=3), team4=Team.objects.get(pk=4), start_time=timezone.now(), end_time=timezone.now())
+    Game.objects.create(start_time=timezone.now(), end_time=timezone.now())
     
     GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1))
     GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1))

@@ -7,42 +7,34 @@ class Team(models.Model):
     def __str__(self):
         return self.team_name
 
-class ScoringType(models.Model):
+class ScoringType(models.Model): #Table for every way to score. #Autogenerates buttons on the judging page
     name = models.CharField(max_length=40)
     limit = models.IntegerField(default=0)
     value = models.IntegerField()
-    extra_data = models.CharField(max_length=10)
-    input_style = models.CharField(max_length=15)
+    extra_data = models.CharField(max_length=10) #used to set colors on the judging page for counters
+    input_style = models.CharField(max_length=15) #specifies how the judging screen should display it
     def __str__(self):
         return self.name
 
 class Game(models.Model):
-    team1 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team1")
-    score1 = models.IntegerField(default=0)
-    team2 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team2")
-    score2 = models.IntegerField(default=0)
-    team3 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team3")
-    score3 = models.IntegerField(default=0)
-    team4 = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team4")
-    score4 = models.IntegerField(default=0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     finished = models.BooleanField(default=False)
-    special_name = models.PositiveSmallIntegerField(default=0)
+    special_name = models.PositiveSmallIntegerField(default=0) #stores data for special games. ie. 1 means it is a semifinal #not used yet
     
 class GameParticipant(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
+    team = models.ForeignKey(Team, on_delete=models.PROTECT)
     score = models.IntegerField(default=0)
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), self.team.team_name])
-    def score(self):
+    def score(self): #updates score field #Unfinished
         counts_list = []
         for scoring_type in ScoringType.objects.all():
             counts_list.append(self.counts(scoring_type))
         return 0
         #return some function of all the counts
-    def counts(self, scoring_type):
+    def counts(self, scoring_type): #Outputs a list of tuples (count, multiplier) for that scoringType
         base = Action.objects.filter(
                 deleted = False
             ).filter(
@@ -63,13 +55,13 @@ class GameParticipant(models.Model):
             counts_multipliers.append((up-down, mult['multiplier']))
         return counts_multipliers
     
-class Action(models.Model):
-    scoring_type = models.ForeignKey(ScoringType, on_delete=models.DO_NOTHING)
+class Action(models.Model): #Table for every scoring action
+    scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
     time = models.DateTimeField()
-    team = models.ForeignKey(Team, on_delete=models.DO_NOTHING)
-    game = models.ForeignKey(Game, on_delete=models.DO_NOTHING)
+    team = models.ForeignKey(Team, on_delete=models.PROTECT)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
     multiplier = models.FloatField(default=1)
-    upDown = models.BooleanField(default=1)
+    upDown = models.BooleanField(default=1) #True is up
     deleted = models.BooleanField(default=False)
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), str(self.scoring_type), str(self.team)])
