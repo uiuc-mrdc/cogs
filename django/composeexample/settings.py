@@ -80,8 +80,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MRDCdb',
-        'USER': 'root',
-        #'PASSWORD': 'apricots',
+        'USER': 'MRDC',
+        'PASSWORD': 'apricots',
         'HOST': 'db',
         'PORT': 3306,
         'CONN_MAX_AGE': 120
