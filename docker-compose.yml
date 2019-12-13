@@ -10,7 +10,7 @@ services:
       MYSQL_PASSWORD: 'apricots'
       MYSQL_ROOT_PASSWORD: 'apricots'
     volumes:
-      - db:/data/db                 # Connects /data/db in the container to a named Docker volume
+      - db:/var/lib/mysql           # Connects /var/lib/mysql in the container to a named Docker volume
   web:
     build: ./django                 # Tells Compose to build the 'web' service from ./django (with Dockerfile)
     volumes:
