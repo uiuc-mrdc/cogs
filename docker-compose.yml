@@ -2,11 +2,12 @@ version: '3.7'
 
 services:
   db:
-    image: mariadb                    # Tells Compose to use the 'mariadb' image for the 'db' service
+    image: mariadb                    # Tells Compose to use the 'mongo' image for the 'db' service
     environment:
-      MYSQL_ROOT_PASSWORD: apricots
-      MYSQL_USER: MRDC              #This user getssuperuser privileges on MRDCdb
-      MYSQL_PASSWORD: apricots      #password for MRDC user
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_USER: MRDC
+      MYSQL_PASSWORD: apricots
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       MYSQL_DATABASE: MRDCdb        # Tells Mariadb to initialize a database called 'MRDCdb' on first start
     volumes:
       - mariadbdata:/data/db        # Connects ./data-db in this repo to a named Docker volume
