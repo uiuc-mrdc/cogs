@@ -1,4 +1,4 @@
-from django.db import models
+from djongo import models
 
 class Team(models.Model):
     team_name = models.CharField(max_length=30)

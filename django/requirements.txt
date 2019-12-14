@@ -1,5 +1,5 @@
 sqlparse==0.2.4
-Django>=2.0,<4.0
+Django>=2.0,<3.0
 psycopg2>=2.7,<3.0
-channels>=2.3,<3.0
-mysqlclient>=1.0,<2.0
+djongo
+channels>=2.3

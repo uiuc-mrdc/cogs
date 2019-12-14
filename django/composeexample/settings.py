@@ -78,12 +78,10 @@ ASGI_APPLICATION = "composeexample.routing.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MRDCdb',
-        'USER': 'root',
-        #'PASSWORD': 'apricots',
+        'ENGINE': 'djongo',
+        'NAME': 'djongo',
         'HOST': 'db',
-        'PORT': 3306,
+        'PORT': 27017,
         'CONN_MAX_AGE': 120
     }
 }
