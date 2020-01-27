@@ -4,11 +4,10 @@ services:
   db:
     image: mariadb                  # Tells Compose to use the 'mariadb' image for the 'db' service
     environment:
-      MYSQL_ROOT_HOST: 'host.docker.internal'
-      MYSQL_DATABASE: 'django'
-      MYSQL_USER: 'root'
-      MYSQL_PASSWORD: 'apricots'
-      MYSQL_ROOT_PASSWORD: 'apricots'
+      MYSQL_DATABASE: 'django'      #name of the auto-created database
+      MYSQL_USER: 'MRDC'            #This user getssuperuser privileges on the django database created above
+      MYSQL_PASSWORD: 'apricots'    #password for MRDC user
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     volumes:
       - db:/var/lib/mysql           # Connects /var/lib/mysql in the container to a named Docker volume
   web:
