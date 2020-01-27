@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'team_management.apps.TeamManagementConfig',
     'channels',
-    'django_dbconn_retry',
 ]
 
 MIDDLEWARE = [
