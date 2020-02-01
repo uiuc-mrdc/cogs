@@ -79,7 +79,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django',
-        'USER': 'MRDC',
+        'USER': 'mrdc',
         'PASSWORD': 'apricots',
         'HOST': 'db',
         'PORT': 3306

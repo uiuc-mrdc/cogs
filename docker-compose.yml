@@ -5,7 +5,7 @@ services:
     image: mariadb                  # Tells Compose to use the 'mariadb' image for the 'db' service
     environment:
       MYSQL_DATABASE: 'django'      #name of the auto-created database
-      MYSQL_USER: 'MRDC'            #This user getssuperuser privileges on the django database created above
+      MYSQL_USER: 'mrdc'            #This user getssuperuser privileges on the django database created above
       MYSQL_PASSWORD: 'apricots'    #password for MRDC user
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     volumes:
