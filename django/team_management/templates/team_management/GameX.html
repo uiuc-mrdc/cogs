@@ -1,0 +1,169 @@
+{% extends "team_management/index.html" %}
+
+{% block css %}
+	{% load static %}
+	{{ block.super }}
+    <link rel="stylesheet" href="{% static 'team_management/gameX.css' %}">
+	
+{% endblock %}
+
+
+{% block body %}
+	<h1>{{ game_id }}</h1>
+	
+	<p>
+		Choose Team: <select id="teamSelector">
+			<option value="0"></option>
+			{% for participant in participant_list %}
+				<option value="{{ participant.team.id }}">{{ participant.team.team_name }}</option> <!-- Change this to pick from only the teams in this game_id -->
+			{% endfor %}
+		</select>
+	</p>
+	
+	<div class="dragon_counters">
+		{% for counter in counter_list %}
+			<span class="{{ counter.name }}" style="position:relative">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
+				<input type="number" min="0" step="1" value="0" id="{{ counter.id }}">
+			</span>
+		{% endfor %}
+	</div>
+	
+
+	
+	<div class="StandardButtons">
+	{% for scoringType in standard_buttons_list %}
+		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
+	{% endfor %}
+	</div>
+	
+	<div class="MultiplierButtons">
+		<label class="checkbox-label">
+			<input type="checkbox" id="flyingCheck" onclick="updateMultiplier()">
+			<span class="checkbox-custom">Flying</span>
+		</label>
+		<label class="checkbox-label">
+			<input type="checkbox" id="storeCheck" onclick="updateMultiplier()">
+			<span class="checkbox-custom">Store-Bought</span>
+		</label>
+		<label class="checkbox-label">
+			<input type="checkbox" id="autonomousCheck" onclick="updateMultiplier()">
+			<span class="checkbox-custom">Autonomous</span>
+		</label>
+	</div>
+	<div id="testText"></div>
+	<div id="deleteButtons"></div>
+{% endblock %}
+
+
+
+<script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
+{% block script %}
+function standard(id){
+	checkTeam()
+	button = document.getElementById(id);
+	limit = button.getAttribute('data-limit');
+	if(limit == 0 || button.value < limit){
+		button.value = parseInt(button.value) + 1;
+		sendAction(id, parseInt(button.value), 'addStandardAction');
+	}
+	drawButton(button);
+}
+
+function counter(id, direction) {
+	checkTeam();
+	inputElem = document.getElementById(id);
+	if (direction == 1) {
+		inputElem.stepUp();
+		sendAction(id, 1, 'addCounterAction');
+	} else {
+		if (inputElem.value >0){
+			inputElem.stepDown();
+			sendAction(id, 0, 'addCounterAction');
+		}
+	}
+}
+var multiplier = 1;
+
+function updateMultiplier(){
+	flying = document.getElementById("flyingCheck");
+	autonomous = document.getElementById("autonomousCheck");
+	store = document.getElementById("storeCheck");
+	
+	multiplier = 1;
+	if (flying.checked){multiplier *= 2}
+	if (store.checked){multiplier *= 3/4}
+	if (autonomous.checked){multiplier*=4}
+}
+
+function drawButton(button){
+	limit = button.getAttribute('data-limit');
+	name = button.getAttribute('data-name');
+	button.innerHTML = name + " " + button.value;
+	if(limit != 0) {
+		button.innerHTML += "/" + limit;
+	}
+}
+
+var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/game/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        //var message = data['message'];
+		document.getElementById("testText").innerHTML += 'success!';
+		document.getElementById("deleteButtons").innerHTML += 
+			"<p data-action_id='" + data['action_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
+			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
+			data['action_id'] + " | " + 
+			data['time'] + " | " + 
+			data['scoringType_name'] + " | " +
+			data['team_name'] + 
+			"</p>";
+    };
+	
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
+    };
+
+function sendAction(id, value, type){
+	team_id = document.getElementById('teamSelector').value
+	chatSocket.send(JSON.stringify({
+		'type':type,
+        'scoringType_id':id, 
+		'team_id':team_id,
+		'value':value,
+		'multiplier':multiplier,
+		'game_id':{{ game_id }},
+    }));
+}
+
+function deleteInDb(ptag){
+	
+	chatSocket.send(JSON.stringify({
+		'type':'delete',
+		'action_id':ptag.getAttribute('data-action_id'),
+	}));
+	//sendAction(ptag.getAttribute('data-action_id'), 0, 'delete');
+	
+	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
+	button.value = button.value - 1;
+	drawButton(button);
+	
+	ptag.style.textDecoration = 'line-through';
+	ptag.style.opacity = '75%';
+	ptag.querySelector('button').remove();
+}
+
+function checkTeam(){
+	if(document.getElementById('teamSelector').value == '0'){
+		alert("Please choose a team");
+		throw new Error("Choose a team before sending data")
+	}
+}
+
+{% endblock %}
+</script> this tag is useless, and just for text highlighting properly in editors

@@ -1,4 +1,9 @@
 from django.contrib import admin
-from .models import Entry
+from .models import ScoringType, Team, Action, Game, GameParticipant
 
-admin.site.register(Entry)
+#We won't need all of these in the admin site eventually. Probably not Action
+admin.site.register(ScoringType)
+admin.site.register(Team)
+admin.site.register(Action) 
+admin.site.register(Game)
+admin.site.register(GameParticipant)
