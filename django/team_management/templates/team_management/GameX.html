@@ -9,7 +9,7 @@
 
 
 {% block body %}
-	<h1>{{ game_id }}</h1>
+	<h1>Game #{{ game_id }}</h1>
 	
 	<p>
 		Choose Team: <select id="teamSelector">
@@ -25,7 +25,7 @@
 			<span class="{{ counter.name }}" style="position:relative">
 				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
 				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
-				<input type="number" min="0" step="1" value="0" id="{{ counter.id }}">
+				<input type="number" step="1" value="0" id="{{ counter.id }}">
 			</span>
 		{% endfor %}
 	</div>
@@ -78,10 +78,8 @@ function counter(id, direction) {
 		inputElem.stepUp();
 		sendAction(id, 1, 'addCounterAction');
 	} else {
-		if (inputElem.value >0){
-			inputElem.stepDown();
-			sendAction(id, 0, 'addCounterAction');
-		}
+		inputElem.stepDown();
+		sendAction(id, 0, 'addCounterAction');
 	}
 }
 var multiplier = 1;
@@ -113,7 +111,7 @@ var chatSocket = new WebSocket(
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
         //var message = data['message'];
-		document.getElementById("testText").innerHTML += 'success!';
+		// document.getElementById("testText").innerHTML += 'success!'; // DEBUG
 		document.getElementById("deleteButtons").innerHTML += 
 			"<p data-action_id='" + data['action_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
 			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
