@@ -2,11 +2,14 @@ version: '3.7'
 
 services:
   db:
-    image: mongo                    # Tells Compose to use the 'mongo' image for the 'db' service
+    image: mariadb                  # Tells Compose to use the 'mariadb' image for the 'db' service
     environment:
-      MONGO_INITDB_DATABASE: djongo # Tells Mongo to initialize a database called 'djongo' on first start
+      MYSQL_DATABASE: 'django'      #name of the auto-created database
+      MYSQL_USER: 'mrdc'            #This user getssuperuser privileges on the django database created above
+      MYSQL_PASSWORD: 'apricots'    #password for MRDC user
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     volumes:
-      - mongodbdata:/data/db        # Connects ./data-db in this repo to a named Docker volume
+      - db:/var/lib/mysql           # Connects /var/lib/mysql in the container to a named Docker volume
   web:
     build: ./django                 # Tells Compose to build the 'web' service from ./django (with Dockerfile)
     volumes:
@@ -15,5 +18,6 @@ services:
       - "8000:8000"                 # Binds port 8000 to container port 8000 (format "HOST:CONTAINER")
     depends_on:
       - db                          # Tells Compose that 'db' needs to be started before 'web' can start
+
 volumes:
-    mongodbdata:
+  db:

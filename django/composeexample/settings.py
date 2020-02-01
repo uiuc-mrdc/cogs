@@ -75,14 +75,14 @@ ASGI_APPLICATION = "composeexample.routing.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'djongo',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'django',
+        'USER': 'mrdc',
+        'PASSWORD': 'apricots',
         'HOST': 'db',
-        'PORT': 27017,
-        'CONN_MAX_AGE': 120
+        'PORT': 3306
     }
 }
 
