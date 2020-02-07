@@ -15,7 +15,7 @@
 		Choose Team: <select id="teamSelector">
 			<option value="0"></option>
 			{% for participant in participant_list %}
-				<option value="{{ participant.team.id }}">{{ participant.team.team_name }}</option> <!-- Change this to pick from only the teams in this game_id -->
+				<option value="{{ participant.id }}">{{ participant.team.team_name }}</option>
 			{% endfor %}
 		</select>
 	</p>
@@ -104,11 +104,11 @@ function drawButton(button){
 	}
 }
 
-var chatSocket = new WebSocket(
+var webSocket = new WebSocket(
         'ws://' + window.location.host +
         '/ws/game/');
 
-    chatSocket.onmessage = function(e) {
+    webSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
         //var message = data['message'];
 		// document.getElementById("testText").innerHTML += 'success!'; // DEBUG
@@ -122,14 +122,14 @@ var chatSocket = new WebSocket(
 			"</p>";
     };
 	
-    chatSocket.onclose = function(e) {
+    webSocket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
 		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
 
 function sendAction(id, value, type){
 	team_id = document.getElementById('teamSelector').value
-	chatSocket.send(JSON.stringify({
+	webSocket.send(JSON.stringify({
 		'type':type,
         'scoringType_id':id, 
 		'team_id':team_id,
@@ -141,11 +141,10 @@ function sendAction(id, value, type){
 
 function deleteInDb(ptag){
 	
-	chatSocket.send(JSON.stringify({
+	webSocket.send(JSON.stringify({
 		'type':'delete',
 		'action_id':ptag.getAttribute('data-action_id'),
 	}));
-	//sendAction(ptag.getAttribute('data-action_id'), 0, 'delete');
 	
 	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
 	button.value = button.value - 1;
