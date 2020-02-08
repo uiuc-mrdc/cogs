@@ -6,10 +6,12 @@ from django.http import HttpResponse
 from .models import ScoringType, Team, Game, GameParticipant
 
 def index(request):
+    print(GameParticipant.objects.get(pk=1).score())
     return render(request, "team_management/index.html", {})
     
 def gameX(request, game_id): #game_id comes from the url
-    counter_list = ScoringType.objects.filter(input_style="Counter")
+    dragon_list = ScoringType.objects.filter(input_style="Counter")
+    treasurebox_list = ScoringType.objects.filter(input_style="Counter2")
     standard_buttons_list = ScoringType.objects.filter(input_style="Standard")
     
     participant_list = Game.objects.get(pk=game_id).gameparticipant_set.all()
@@ -18,7 +20,8 @@ def gameX(request, game_id): #game_id comes from the url
         'game_id':game_id, 
         'participant_list':participant_list,
         'standard_buttons_list':standard_buttons_list,
-        'counter_list':counter_list
+        'dragon_list':dragon_list,
+        'treasurebox_list':treasurebox_list,
         }
     return render(request, 'team_management/GameX.html', context)
 
