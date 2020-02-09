@@ -6,7 +6,6 @@ from django.http import HttpResponse
 from .models import ScoringType, Team, Game, GameParticipant
 
 def index(request):
-    print(GameParticipant.objects.get(pk=1).score())
     return render(request, "team_management/index.html", {})
     
 def gameX(request, game_id): #game_id comes from the url
@@ -14,8 +13,9 @@ def gameX(request, game_id): #game_id comes from the url
     treasurebox_list = ScoringType.objects.filter(input_style="Counter2")
     standard_buttons_list = ScoringType.objects.filter(input_style="Standard")
     
-    participant_list = Game.objects.get(pk=game_id).gameparticipant_set.all()
-    #participant_list = GameParticipant.objects.filter(game__id=game_id) #This and the line above return equivalent QuerySets, I think
+    #participant_list = Game.objects.get(pk=game_id).gameparticipant_set.all().select_related('team')
+    participant_list = GameParticipant.objects.filter(game=game_id).select_related('team') #These two lines return equivalent querysets for Django, but the unused one hits the database twice. Also, select_related saves 4 queries, since it would have to fetch the team name every time it is requested, but select_related just joins it now
+
     context = {
         'game_id':game_id, 
         'participant_list':participant_list,
