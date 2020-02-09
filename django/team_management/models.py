@@ -60,11 +60,11 @@ class GameParticipant(models.Model):
         base = Action.objects.filter(
                 deleted = False
             ).filter(
-                team = self.team
+                team = self.team_id
             ).filter(
                 scoring_type = scoring_type
             ).filter(
-                game = self.game
+                game = self.game_id
             )
         counts_multipliers = []
         for mult in base.values('multiplier').distinct():
