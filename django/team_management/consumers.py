@@ -40,9 +40,15 @@ class GameConsumer(WebsocketConsumer):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
         team = Team.objects.get(pk=json_data['team_id'])
         game = Game.objects.get(pk=json_data['game_id'])
-        #multiplier = ?????
+        multiplier = json_data['multiplier']
         direction = json_data['value']
-        action = Action(scoring_type=scoring_type, time=timezone.now(), team=team, game=game, upDown=direction)
+        action = Action(
+            scoring_type=scoring_type, 
+            time=timezone.now(), 
+            team=team, 
+            game=game, 
+            multiplier = multiplier,
+            upDown=direction)
         action.save()
         #note there is no response, since it doesn't need a delete button
     
