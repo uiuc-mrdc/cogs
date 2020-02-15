@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   db:
-    image: mariadb                  # Tells Compose to use the 'mariadb' image for the 'db' service
+    image: mariadb:10               # Tells Compose to use the 'mariadb' image for the 'db' service
     environment:
       MYSQL_DATABASE: 'django'      #name of the auto-created database
       MYSQL_USER: 'mrdc'            #This user getssuperuser privileges on the django database created above
@@ -18,6 +18,21 @@ services:
       - "8000:8000"                 # Binds port 8000 to container port 8000 (format "HOST:CONTAINER")
     depends_on:
       - db                          # Tells Compose that 'db' needs to be started before 'web' can start
+  towers:
+    build: ./towers
+    volumes:
+      - ./towers:/code
+    devices:
+      - /dev/ttyS0
+      - /dev/ttyS1
+      - /dev/ttyS2
+      - /dev/ttyS3
+      - /dev/ttyS4
+      - /dev/ttyS5
+      - /dev/ttyS6
+      - /dev/ttyS7
+      - /dev/ttyS8
+      - /dev/ttyS9
 
 volumes:
   db:
