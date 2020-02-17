@@ -15,7 +15,7 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Blue Dragon ball", limit=0, value=16, extra_data="#0000FF", input_style="Counter")
     ScoringType.objects.create(name="Green Dragon ball", limit=0, value=16, extra_data="#00FF00", input_style="Counter")
     
-    ScoringType.objects.create(name="Brew Potion", limit=3, value=30, extra_data="", input_style="Standard")
+    ScoringType.objects.create(name="Brew Potion", limit=3, value=0, extra_data="", input_style="Standard")
     ScoringType.objects.create(name="Open Treasury", limit=1, value=40, extra_data="", input_style="Standard")
     ScoringType.objects.create(name="Infinite Example", limit=0, value=1, extra_data="", input_style="Standard")
     

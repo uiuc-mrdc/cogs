@@ -44,14 +44,7 @@ class GameParticipant(models.Model):
         total=0
         for count_mult in countslist:
             while count_mult[0] > 0:
-                if i==0:
-                    total += 20 * count_mult[1]
-                elif i==1:
-                    total += 30 * count_mult[1]
-                elif i==2:
-                    total += 40 * count_mult[1]
-                else:
-                    print("Brew Potions functin is broken") #for testing
+                total += (20 + i*10) * count_mult[1] #custom formula
                 i+=1
                 count_mult[0] -= 1
         return total
