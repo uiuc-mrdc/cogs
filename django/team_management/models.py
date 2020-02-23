@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 
 class Team(models.Model):
     team_name = models.CharField(max_length=30)
@@ -60,15 +61,13 @@ class GameParticipant(models.Model):
                 game = self.game_id
             )
         counts_multipliers = []
-        for mult in base.values('multiplier').distinct():
-            mult_table = base.filter(multiplier = mult['multiplier'])
-            up = mult_table.filter(
-                    upDown = True
-                ).count()
-            down = mult_table.filter( #note only counter style inputs have any "down" values
-                    upDown = False
-                ).count()
-            counts_multipliers.append([up-down, mult['multiplier']])
+        for mults in base.values('multiplier').distinct():
+            count = base.filter(
+                    multiplier = mults['multiplier']
+                ).filter(
+                    upDown = True  #Change this in judging-page-fixes
+                ).aggregate(Sum('upDown', output_field=models.IntegerField()))['upDown__sum'] #sums over the upDown field to count for regular buttons, or read a single value for others
+            counts_multipliers.append([count, mults['multiplier']])
         return counts_multipliers
         
     switcher = {
