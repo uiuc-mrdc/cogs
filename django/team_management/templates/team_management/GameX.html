@@ -21,7 +21,8 @@
 	</p>
 	
 	<div class="dragon_counters">
-		{% for counter in counter_list %}
+		Dragon Scoring Bin Balls:<br><br>
+		{% for counter in dragon_list %}
 			<span class="{{ counter.name }}" style="position:relative">
 				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
 				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
@@ -36,6 +37,17 @@
 	{% for scoringType in standard_buttons_list %}
 		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
+	</div>
+	
+	<div class="treasurebox_counters">
+		Treasure Box Balls:<br><br>
+		{% for counter in treasurebox_list %}
+			<span class="{{ counter.name }}" style="position:relative">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
+				<input type="number" step="1" value="0" id="{{ counter.id }}">
+			</span>
+		{% endfor %}
 	</div>
 	
 	<div class="MultiplierButtons">
