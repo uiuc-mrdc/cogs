@@ -1,7 +1,7 @@
 from channels.generic.websocket import WebsocketConsumer
 import json
 from django.utils import timezone
-from .models import Action, ScoringType, Team, Game
+from .models import Action, ScoringType, Team, Game, GameParticipant
 
 class GameConsumer(WebsocketConsumer):
     def connect(self):
@@ -17,38 +17,35 @@ class GameConsumer(WebsocketConsumer):
         
     def addStandardAction(self, json_data):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
-        team = Team.objects.get(pk=json_data['team_id'])
-        game = Game.objects.get(pk=json_data['game_id'])
+        game_participant = GameParticipant.objects.get(pk=json_data['participant_id'])
         multiplier = json_data['multiplier']
         action = Action(
             scoring_type = scoring_type, 
             time = timezone.now(), 
-            team = team, 
+            game_participant = game_participant,
             multiplier = multiplier,
-            game = game)
+            value = 1)
         action.save()
         
         self.send(text_data=json.dumps({
-            'team_name':team.team_name,
+            'team_name':game_participant.team.team_name,
             'action_id':action.id,
             'scoringType_name':scoring_type.name,
             'scoringType_id':scoring_type.id,
             'time':str(action.time),
         }))
     
-    def addCounterAction(self, json_data):
+    def updateCounterAction(self, json_data):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
-        team = Team.objects.get(pk=json_data['team_id'])
-        game = Game.objects.get(pk=json_data['game_id'])
+        participant_id = GameParticipant.objects.get(pk=json_data['participant_id'])
         multiplier = json_data['multiplier']
-        direction = json_data['value']
+        value = json_data['value']
         action = Action(
             scoring_type=scoring_type, 
             time=timezone.now(), 
-            team=team, 
-            game=game, 
+            game_participant=participant_id,
             multiplier = multiplier,
-            upDown=direction)
+            value = value)
         action.save()
         #note there is no response, since it doesn't need a delete button
     
@@ -60,5 +57,5 @@ class GameConsumer(WebsocketConsumer):
     switcher = { #must be defined after the functions
         'delete':deleteAction,
         'addStandardAction':addStandardAction,
-        'addCounterAction':addCounterAction,
+        'updateCounterAction':updateCounterAction,
     }

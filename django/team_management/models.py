@@ -76,11 +76,10 @@ class GameParticipant(models.Model):
     
 class Action(models.Model): #Table for every scoring action
     scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
+    game_participant = models.ForeignKey(GameParticipant, on_delete=models.CASCADE)
     time = models.DateTimeField()
-    team = models.ForeignKey(Team, on_delete=models.PROTECT)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
     multiplier = models.FloatField(default=1)
-    upDown = models.BooleanField(default=1) #True is up
+    value = models.IntegerField(default=0)
     deleted = models.BooleanField(default=False)
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), str(self.scoring_type), str(self.team)])

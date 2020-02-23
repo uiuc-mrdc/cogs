@@ -88,11 +88,10 @@ function counter(id, direction) {
 	inputElem = document.getElementById(id);
 	if (direction == 1) {
 		inputElem.stepUp();
-		sendAction(id, 1, 'addCounterAction');
 	} else {
 		inputElem.stepDown();
-		sendAction(id, 0, 'addCounterAction');
 	}
+	sendAction(id, parseInt(inputElem.value), 'updateCounterAction')
 }
 var multiplier = 1;
 
@@ -140,11 +139,11 @@ var webSocket = new WebSocket(
     };
 
 function sendAction(id, value, type){
-	team_id = document.getElementById('teamSelector').value
+	participant_id = document.getElementById('teamSelector').value
 	webSocket.send(JSON.stringify({
 		'type':type,
         'scoringType_id':id, 
-		'team_id':team_id,
+		'participant_id':participant_id,
 		'value':value,
 		'multiplier':multiplier,
 		'game_id':{{ game_id }},
