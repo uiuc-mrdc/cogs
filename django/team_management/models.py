@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Sum
+from django.utils import timezone
 
 class Team(models.Model):
     team_name = models.CharField(max_length=30)
@@ -54,19 +55,15 @@ class GameParticipant(models.Model):
         base = Action.objects.filter(
                 deleted = False
             ).filter(
-                team = self.team_id
+                game_participant = self.id
             ).filter(
                 scoring_type = scoring_type
-            ).filter(
-                game = self.game_id
             )
         counts_multipliers = []
         for mults in base.values('multiplier').distinct():
             count = base.filter(
                     multiplier = mults['multiplier']
-                ).filter(
-                    upDown = True  #Change this in judging-page-fixes
-                ).aggregate(Sum('upDown', output_field=models.IntegerField()))['upDown__sum'] #sums over the upDown field to count for regular buttons, or read a single value for others
+                ).aggregate(Sum('value', output_field=models.IntegerField()))['value__sum'] #sums over the value field to count for regular buttons, or read a single value for others
             counts_multipliers.append([count, mults['multiplier']])
         return counts_multipliers
         
@@ -77,9 +74,9 @@ class GameParticipant(models.Model):
 class Action(models.Model): #Table for every scoring action
     scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
     game_participant = models.ForeignKey(GameParticipant, on_delete=models.CASCADE)
-    time = models.DateTimeField()
+    time = models.DateTimeField(default=timezone.now())
     multiplier = models.FloatField(default=1)
     value = models.IntegerField(default=0)
     deleted = models.BooleanField(default=False)
     def __str__(self):
-        return ", ".join(["Game " + str(self.game.id), str(self.scoring_type), str(self.team)])
+        return ", ".join(["Game " + str(self.game_participant.game_id), str(self.scoring_type), str(self.game_participant.team)])

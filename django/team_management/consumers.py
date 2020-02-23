@@ -40,12 +40,12 @@ class GameConsumer(WebsocketConsumer):
         participant_id = GameParticipant.objects.get(pk=json_data['participant_id'])
         multiplier = json_data['multiplier']
         value = json_data['value']
-        action = Action(
+        action, created = Action.objects.get_or_create(
             scoring_type=scoring_type, 
-            time=timezone.now(), 
-            game_participant=participant_id,
-            multiplier = multiplier,
-            value = value)
+            game_participant=participant_id)
+        action.multiplier = multiplier
+        #action.time = timezone.now()
+        action.value = value
         action.save()
         #note there is no response, since it doesn't need a delete button
     

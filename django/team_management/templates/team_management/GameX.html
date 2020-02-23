@@ -78,7 +78,7 @@ function standard(id){
 	limit = button.getAttribute('data-limit');
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
-		sendAction(id, parseInt(button.value), 'addStandardAction');
+		sendAction(id, 'addStandardAction');
 	}
 	drawButton(button);
 }
@@ -91,7 +91,7 @@ function counter(id, direction) {
 	} else {
 		inputElem.stepDown();
 	}
-	sendAction(id, parseInt(inputElem.value), 'updateCounterAction')
+	sendAction(id, 'updateCounterAction', parseInt(inputElem.value))
 }
 var multiplier = 1;
 
@@ -138,7 +138,7 @@ var webSocket = new WebSocket(
 		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
 
-function sendAction(id, value, type){
+function sendAction(id, type, value=1){
 	participant_id = document.getElementById('teamSelector').value
 	webSocket.send(JSON.stringify({
 		'type':type,
