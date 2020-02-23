@@ -24,9 +24,9 @@
 		Dragon Scoring Bin Balls:<br><br>
 		{% for counter in dragon_list %}
 			<span class="{{ counter.name }}" style="position:relative">
-				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
-				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
-				<input type="number" step="1" value="0" id="{{ counter.id }}">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.nextElementSibling.stepDown();counter({{ counter.id }})"></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.stepUp();counter({{ counter.id }})" ></button>
+				<input type="number" step="1" value="0" id="{{ counter.id }}" onchange="counter({{ counter.id }})">
 			</span>
 		{% endfor %}
 	</div>
@@ -43,9 +43,9 @@
 		Treasure Box Balls:<br><br>
 		{% for counter in treasurebox_list %}
 			<span class="{{ counter.name }}" style="position:relative">
-				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
-				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
-				<input type="number" step="1" value="0" id="{{ counter.id }}">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.nextElementSibling.stepDown();counter({{ counter.id }})" ></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.stepUp();counter({{ counter.id }})" ></button>
+				<input type="number" step="1" value="0" id="{{ counter.id }}" change="counter({{ counter.id }})">
 			</span>
 		{% endfor %}
 	</div>
@@ -83,14 +83,9 @@ function standard(id){
 	drawButton(button);
 }
 
-function counter(id, direction) {
+function counter(id) {
 	checkTeam();
 	inputElem = document.getElementById(id);
-	if (direction == 1) {
-		inputElem.stepUp();
-	} else {
-		inputElem.stepDown();
-	}
 	sendAction(id, 'updateCounterAction', parseInt(inputElem.value))
 }
 var multiplier = 1;
