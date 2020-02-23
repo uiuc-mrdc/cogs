@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 
 class Team(models.Model):
     team_name = models.CharField(max_length=30)
@@ -28,32 +29,50 @@ class GameParticipant(models.Model):
     score = models.IntegerField(default=0)
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), self.team.team_name])
+        
     def score(self): #updates score field #Unfinished
-        counts_list = []
+        sum = 0
         for scoring_type in ScoringType.objects.all():
-            counts_list.append(self.counts(scoring_type))
-        return 0
-        #return some function of all the counts
-    def counts(self, scoring_type): #Outputs a list of tuples (count, multiplier) for that scoringType
+            if scoring_type.value != 0:
+                for count_mult in self.counts(scoring_type): #repeats for each multiplier level
+                    sum += scoring_type.value * count_mult[0] * count_mult[1] #value * count * multiplier
+            else:
+                sum += self.switcher.get(scoring_type.name)(self, self.counts(scoring_type)) #calls custom function
+        return sum
+
+    def brewPotion(self, countslist):
+        i=0
+        total=0
+        for count_mult in countslist:
+            while count_mult[0] > 0:
+                total += (20 + i*10) * count_mult[1] #custom formula
+                i+=1
+                count_mult[0] -= 1
+        return total
+        
+    def counts(self, scoring_type): #Outputs a list of pairs [count, multiplier] for that scoringType; Pairs come in chronological order with each multiplier level grouped
         base = Action.objects.filter(
                 deleted = False
             ).filter(
-                team = self.team
+                team = self.team_id
             ).filter(
                 scoring_type = scoring_type
+            ).filter(
+                game = self.game_id
             )
         counts_multipliers = []
-        print(base.values('multiplier').distinct())
-        for mult in base.values('multiplier').distinct():
-            mult_table = base.filter(multiplier = mult['multiplier'])
-            up = mult_table.filter(
-                    upDown = True
-                ).count()
-            down = mult_table.filter( #note only counter style inputs have any "down" values
-                    upDown = False
-                ).count()
-            counts_multipliers.append((up-down, mult['multiplier']))
+        for mults in base.values('multiplier').distinct():
+            count = base.filter(
+                    multiplier = mults['multiplier']
+                ).filter(
+                    upDown = True  #Change this in judging-page-fixes
+                ).aggregate(Sum('upDown', output_field=models.IntegerField()))['upDown__sum'] #sums over the upDown field to count for regular buttons, or read a single value for others
+            counts_multipliers.append([count, mults['multiplier']])
         return counts_multipliers
+        
+    switcher = {
+        "Brew Potion":brewPotion,
+    }
     
 class Action(models.Model): #Table for every scoring action
     scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
