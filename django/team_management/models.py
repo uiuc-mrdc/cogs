@@ -31,14 +31,17 @@ class GameParticipant(models.Model):
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), self.team.team_name])
         
-    def score(self): #updates score field #Unfinished
+    def calculateScore(self): #updates score field #Unfinished
         sum = 0
-        for scoring_type in ScoringType.objects.all():
+        for scoring_type in ScoringType.objects.all(): #loops through each scoring_type
             if scoring_type.value != 0:
                 for count_mult in self.counts(scoring_type): #repeats for each multiplier level
                     sum += scoring_type.value * count_mult[0] * count_mult[1] #value * count * multiplier
             else:
-                sum += self.switcher.get(scoring_type.name)(self, self.counts(scoring_type)) #calls custom function
+                sum += self.switcher.get(scoring_type.name)(self, self.counts(scoring_type)) #calls custom function if scoring_type.value == 0
+        #saves score to db
+        self.score = sum
+        self.save()
         return sum
 
     def brewPotion(self, countslist):

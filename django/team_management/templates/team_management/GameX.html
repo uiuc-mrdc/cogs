@@ -124,7 +124,7 @@ var webSocket = new WebSocket(
         'ws://' + window.location.host +
         '/ws/game/');
 
-    webSocket.onmessage = function(e) { //Function that receives all incoming websocket data //Currently just for generating delete buttons
+    webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
         var data = JSON.parse(e.data);
 		
 		switch(data['type']) {
@@ -136,7 +136,7 @@ var webSocket = new WebSocket(
 					"<td>" + data['multiplier'] + "</td>" +
 					"<td>" + data['time'] + "</td></tr>"
 				break;
-			case 'updateScore':
+			case 'clientUpdateScore':
 				console.log('updateing scre')
 				document.getElementById("testChannelsLayers").innerHTML += data['participant_id'] + ": " + data['score']
 				break;
