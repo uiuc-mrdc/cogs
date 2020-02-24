@@ -130,7 +130,7 @@ function drawButton(button){
 //sets up websocket and handles incoming data
 var webSocket = new WebSocket(
         'ws://' + window.location.host +
-        '/ws/game/');
+        '/ws/game/{{ game_id }}');
 
     webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
         var data = JSON.parse(e.data);

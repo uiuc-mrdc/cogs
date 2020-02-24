@@ -6,9 +6,10 @@ import pytz
 from asgiref.sync import async_to_sync
 
 class GameConsumer(WebsocketConsumer):
-    groups = ["judges"]
     
     def connect(self):
+        #adds itself to the group for its game_id
+        async_to_sync(self.channel_layer.group_add)(str(self.scope["url_route"]["kwargs"]["game_id"]), self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
@@ -69,9 +70,10 @@ class GameConsumer(WebsocketConsumer):
         action.save()
         self.groupUpdateScore(action.game_participant)
     
+    #updates score for all clients in the group for this game_participant's game_id
     def groupUpdateScore(self, game_participant):
         async_to_sync(self.channel_layer.group_send)(
-            "judges",
+            str(game_participant.game_id),
             {
             'type':'clientUpdateScore', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
             'participant_id':game_participant.id,
