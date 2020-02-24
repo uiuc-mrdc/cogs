@@ -5,5 +5,4 @@ from . import consumers
 
 websocket_urlpatterns = [
     path("ws/game/<int:game_id>", consumers.GameConsumer, name="gameConsumer"),
-    #re_path(r'ws/game/(?P<game_id>\w+)/$', consumers.GameConsumer),
 ]

@@ -13,7 +13,7 @@
 	
 	<div class="scoreboard">
 		{% for participant in participant_list %}
-			<div class="column" style="width:25%">
+			<div class="column" style="width:{% widthratio 1 participant_list|length 100 %}%">
 				<input type="radio" name="team" onclick="changeTeam(this.value)" value="{{ participant.id }}" id="participant{{ participant.id }}">
 				<label for="participant{{ participant.id }}">{{ participant.team.team_name }}</label>
 				<h1 id="score{{ participant.id }}">
