@@ -2,6 +2,7 @@ from channels.generic.websocket import WebsocketConsumer
 import json
 from django.utils import timezone
 from .models import Action, ScoringType, Team, Game, GameParticipant
+import pytz
 
 class GameConsumer(WebsocketConsumer):
     def connect(self):
@@ -32,7 +33,8 @@ class GameConsumer(WebsocketConsumer):
             'action_id':action.id,
             'scoringType_name':scoring_type.name,
             'scoringType_id':scoring_type.id,
-            'time':str(action.time),
+            'multiplier':multiplier,
+            'time':action.time.astimezone(pytz.timezone('America/Chicago')).strftime("%H:%M:%S"),
         }))
     
     def updateCounterAction(self, json_data):

@@ -92,3 +92,8 @@ button.down {
   font-size: 1em;
   border-radius: .5em
 }
+
+th, td {
+	text-align: center;
+}
+

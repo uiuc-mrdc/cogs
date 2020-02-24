@@ -64,8 +64,18 @@
 			<span class="checkbox-custom">Autonomous</span>
 		</label>
 	</div>
-	<div id="testText"></div>
-	<div id="deleteButtons"></div>
+	
+	<div class="deleteButtonDiv">
+		<table id="deleteButtonTable" style="width:90%; margin:auto">
+			<tr>
+				<th>Delete</th>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Multiplier</th>
+				<th>Time</th>
+			</tr>
+		</table>
+	</div>
 {% endblock %}
 
 
@@ -114,22 +124,19 @@ var webSocket = new WebSocket(
         'ws://' + window.location.host +
         '/ws/game/');
 
-    webSocket.onmessage = function(e) {
+    webSocket.onmessage = function(e) { //Function that receives all incoming websocket data //Currently just for generating delete buttons
         var data = JSON.parse(e.data);
-        //var message = data['message'];
-		// document.getElementById("testText").innerHTML += 'success!'; // DEBUG
-		document.getElementById("deleteButtons").innerHTML += 
-			"<p data-action_id='" + data['action_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
-			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
-			data['action_id'] + " | " + 
-			data['time'] + " | " + 
-			data['scoringType_name'] + " | " +
-			data['team_name'] + 
-			"</p>";
+
+		document.getElementById("deleteButtonTable").innerHTML +=
+			"<tr><td><button onclick='deleteInDb(this.parentNode.nextElementSibling)'>Delete</button></td>" + 
+			"<td data-scoringType_id='" + data['scoringType_id'] + "'>" + data['action_id'] + "</td>" +
+			"<td>" + data['scoringType_name'] + "</td>" + 
+			"<td>" + data['multiplier'] + "</td>" +
+			"<td>" + data['time'] + "</td></tr>"
     };
 	
     webSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
+        console.error('Websocket closed unexpectedly');
 		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
 
@@ -145,21 +152,24 @@ function sendAction(id, type, value=1){
     }));
 }
 
-function deleteInDb(ptag){
-	
+function deleteInDb(elem){
 	webSocket.send(JSON.stringify({
 		'type':'delete',
-		'action_id':ptag.getAttribute('data-action_id'),
+		'action_id':elem.innerHTML,
 	}));
 	
-	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
+	//Fixes counts on the button
+	button = document.getElementById(elem.getAttribute('data-scoringType_id'));
 	button.value = button.value - 1;
 	drawButton(button);
-	
-	ptag.style.textDecoration = 'line-through';
-	ptag.style.opacity = '75%';
-	ptag.querySelector('button').remove();
+
+	//changes formatting to show it is deleted
+	rowElem = elem.parentNode;
+	rowElem.style.textDecoration = 'line-through';
+	rowElem.style.opacity = '75%';
+	rowElem.querySelector('button').remove();
 }
+
 
 function checkTeam(){
 	if(document.getElementById('teamSelector').value == '0'){
