@@ -97,3 +97,16 @@ th, td {
 	text-align: center;
 }
 
+.column {
+	float: left;
+	text-align:center;
+}
+
+input[type=radio] {
+	position:fixed;
+	opacity:0;
+}
+
+input[type=radio]:checked + label {
+  font-weight: bold;
+}

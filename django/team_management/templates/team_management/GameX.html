@@ -10,16 +10,19 @@
 
 {% block body %}
 	<h1>Game #{{ game_id }}</h1>
-	<div id="testChannelsLayers"></div>
-	<p>
-		Choose Team: <select id="teamSelector">
-			<option value="0"></option>
-			{% for participant in participant_list %}
-				<option value="{{ participant.id }}">{{ participant.team.team_name }}</option>
-			{% endfor %}
-		</select>
-	</p>
 	
+	<div class="scoreboard">
+		{% for participant in participant_list %}
+			<div class="column" style="width:25%">
+				<input type="radio" name="team" onclick="changeTeam(this.value)" value="{{ participant.id }}" id="participant{{ participant.id }}">
+				<label for="participant{{ participant.id }}">{{ participant.team.team_name }}</label>
+				<h1 id="score{{ participant.id }}">
+				-
+				</h1>
+			</div>
+		{% endfor %}
+	</div>
+
 	<div class="dragon_counters">
 		Dragon Scoring Bin Balls:<br><br>
 		{% for counter in dragon_list %}
@@ -82,6 +85,8 @@
 
 <script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
+
+//handles standard button presses
 function standard(id){
 	checkTeam()
 	button = document.getElementById(id);
@@ -93,6 +98,7 @@ function standard(id){
 	drawButton(button);
 }
 
+//handles counter changes
 function counter(id) {
 	checkTeam();
 	inputElem = document.getElementById(id);
@@ -111,6 +117,7 @@ function updateMultiplier(){
 	if (autonomous.checked){multiplier*=4}
 }
 
+//fixes innerHTML for standard buttons
 function drawButton(button){
 	limit = button.getAttribute('data-limit');
 	name = button.getAttribute('data-name');
@@ -120,6 +127,7 @@ function drawButton(button){
 	}
 }
 
+//sets up websocket and handles incoming data
 var webSocket = new WebSocket(
         'ws://' + window.location.host +
         '/ws/game/');
@@ -137,8 +145,7 @@ var webSocket = new WebSocket(
 					"<td>" + data['time'] + "</td></tr>"
 				break;
 			case 'clientUpdateScore':
-				console.log('updateing scre')
-				document.getElementById("testChannelsLayers").innerHTML += data['participant_id'] + ": " + data['score']
+				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
 				break;
 		}
     };
@@ -148,8 +155,9 @@ var webSocket = new WebSocket(
 		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
 
+//sends an action (called in standard() and counter())
 function sendAction(id, type, value=1){
-	participant_id = document.getElementById('teamSelector').value
+	//participant_id = document.getElementById('teamSelector').value
 	webSocket.send(JSON.stringify({
 		'type':type,
         'scoringType_id':id, 
@@ -160,7 +168,8 @@ function sendAction(id, type, value=1){
     }));
 }
 
-function deleteInDb(elem){
+//handles the delete buttons at the bottom of the page
+function deleteInDb(elem){ //<td> elem containing the action_id
 	webSocket.send(JSON.stringify({
 		'type':'delete',
 		'action_id':elem.innerHTML,
@@ -178,9 +187,15 @@ function deleteInDb(elem){
 	rowElem.querySelector('button').remove();
 }
 
+var participant_id = 0
+function changeTeam(value){
+	participant_id = value;
+	//Get values from server to update values and generate delete buttons
+}
 
+//throws error if no team is selected (called in standard() and counter())
 function checkTeam(){
-	if(document.getElementById('teamSelector').value == '0'){
+	if(participant_id == '0'){
 		alert("Please choose a team");
 		throw new Error("Choose a team before sending data")
 	}
