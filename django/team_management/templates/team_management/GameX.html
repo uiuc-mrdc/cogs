@@ -10,7 +10,7 @@
 
 {% block body %}
 	<h1>Game #{{ game_id }}</h1>
-	
+	<div id="testChannelsLayers"></div>
 	<p>
 		Choose Team: <select id="teamSelector">
 			<option value="0"></option>
@@ -126,13 +126,21 @@ var webSocket = new WebSocket(
 
     webSocket.onmessage = function(e) { //Function that receives all incoming websocket data //Currently just for generating delete buttons
         var data = JSON.parse(e.data);
-
-		document.getElementById("deleteButtonTable").innerHTML +=
-			"<tr><td><button onclick='deleteInDb(this.parentNode.nextElementSibling)'>Delete</button></td>" + 
-			"<td data-scoringType_id='" + data['scoringType_id'] + "'>" + data['action_id'] + "</td>" +
-			"<td>" + data['scoringType_name'] + "</td>" + 
-			"<td>" + data['multiplier'] + "</td>" +
-			"<td>" + data['time'] + "</td></tr>"
+		
+		switch(data['type']) {
+			case 'deleteButton':
+				document.getElementById("deleteButtonTable").innerHTML +=
+					"<tr><td><button onclick='deleteInDb(this.parentNode.nextElementSibling)'>Delete</button></td>" + 
+					"<td data-scoringType_id='" + data['scoringType_id'] + "'>" + data['action_id'] + "</td>" +
+					"<td>" + data['scoringType_name'] + "</td>" + 
+					"<td>" + data['multiplier'] + "</td>" +
+					"<td>" + data['time'] + "</td></tr>"
+				break;
+			case 'updateScore':
+				console.log('updateing scre')
+				document.getElementById("testChannelsLayers").innerHTML += data['participant_id'] + ": " + data['score']
+				break;
+		}
     };
 	
     webSocket.onclose = function(e) {

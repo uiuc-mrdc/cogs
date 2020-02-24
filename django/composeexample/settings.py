@@ -73,6 +73,15 @@ WSGI_APPLICATION = 'composeexample.wsgi.application'
 
 ASGI_APPLICATION = "composeexample.routing.application"
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("172.19.0.1", 6379)], #not sure how to make this work for everyone, but it works for me (Michael) Probably some docker network stuff
+        },
+    },
+}
+
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 DATABASES = {

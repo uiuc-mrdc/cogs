@@ -3,8 +3,11 @@ import json
 from django.utils import timezone
 from .models import Action, ScoringType, Team, Game, GameParticipant
 import pytz
+from asgiref.sync import async_to_sync
 
 class GameConsumer(WebsocketConsumer):
+    groups = ["judges"]
+    
     def connect(self):
         self.accept()
 
@@ -12,9 +15,11 @@ class GameConsumer(WebsocketConsumer):
         pass
 
     def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        func = self.switcher.get(text_data_json['type']) #switcher is at the bottom
-        return func(self, text_data_json) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
+        
+        dict_data = json.loads(text_data)
+        print('went through receive', dict_data['type'])
+        func = self.switcher.get(dict_data['type']) #switcher is at the bottom
+        return func(self, dict_data) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
         
     def addStandardAction(self, json_data):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
@@ -28,8 +33,16 @@ class GameConsumer(WebsocketConsumer):
             value = 1)
         action.save()
         
+        async_to_sync(self.channel_layer.group_send)(
+            "judges",
+            {
+            'type':'updateScore', #note that this one directly calls the updateScore method, rather than going through the receive method, since it is in a native python dict (I think)
+            'participant_id':game_participant.id,
+            'score':game_participant.score(),
+        })
+        
         self.send(text_data=json.dumps({
-            'team_name':game_participant.team.team_name,
+            'type':'deleteButton',
             'action_id':action.id,
             'scoringType_name':scoring_type.name,
             'scoringType_id':scoring_type.id,
@@ -56,8 +69,12 @@ class GameConsumer(WebsocketConsumer):
         action.deleted = True
         action.save()
         
+    def updateScore(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+        
     switcher = { #must be defined after the functions
         'delete':deleteAction,
         'addStandardAction':addStandardAction,
         'updateCounterAction':updateCounterAction,
+        'updateScore':updateScore,
     }

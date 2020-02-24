@@ -18,6 +18,11 @@ services:
       - "8000:8000"                 # Binds port 8000 to container port 8000 (format "HOST:CONTAINER")
     depends_on:
       - db                          # Tells Compose that 'db' needs to be started before 'web' can start
-
+    links:
+      - redis
+  redis:
+    image: 'redis:latest'           # tells compose to use the official redis image
+    ports:
+      - "6379:6379"                 #binds host port 6379 to port 6379 on the container, shich is the default for Redis
 volumes:
   db:
