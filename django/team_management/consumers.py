@@ -4,6 +4,9 @@ from django.utils import timezone
 from .models import Action, ScoringType, Team, Game, GameParticipant
 import pytz
 from asgiref.sync import async_to_sync
+from django.db.models import CharField, TimeField, DateTimeField
+from django.db.models.functions import Cast
+from django.db.models.functions.datetime import TruncTime, TruncSecond
 
 class GameConsumer(WebsocketConsumer):
     
@@ -40,8 +43,8 @@ class GameConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'type':'deleteButton',
             'action_id':action.id,
-            'scoringType_name':scoring_type.name,
-            'scoringType_id':scoring_type.id,
+            'scoring_type_name':scoring_type.name,
+            'scoring_type_id':scoring_type.id,
             'multiplier':multiplier,
             'time':action.time.astimezone(pytz.timezone('America/Chicago')).strftime("%H:%M:%S"),
         }))
@@ -69,6 +72,18 @@ class GameConsumer(WebsocketConsumer):
         action.deleted = True
         action.save()
         self.groupUpdateScore(action.game_participant)
+   
+    def changeTeam(self, dict_data):
+        action_list = list(Action.objects.filter(
+            game_participant=dict_data['participant_id']
+        ).filter(
+            deleted=False
+        ).order_by('scoring_type', 'id'
+        ).values('id', 'scoring_type', 'value', 'multiplier', str_time = Cast(TruncTime(TruncSecond('time', DateTimeField()), TimeField()), CharField())))
+        self.send(text_data=json.dumps({
+            'type': 'changeTeam',
+            'actions': action_list
+        }))
     
     #updates score for all clients in the group for this game_participant's game_id
     def groupUpdateScore(self, game_participant):
@@ -87,4 +102,5 @@ class GameConsumer(WebsocketConsumer):
         'delete':deleteAction,
         'addStandardAction':addStandardAction,
         'updateCounterAction':updateCounterAction,
+        'changeTeam': changeTeam
     }

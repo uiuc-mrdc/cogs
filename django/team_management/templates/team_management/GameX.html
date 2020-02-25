@@ -17,7 +17,7 @@
 				<input type="radio" name="team" onclick="changeTeam(this.value)" value="{{ participant.id }}" id="participant{{ participant.id }}">
 				<label for="participant{{ participant.id }}">{{ participant.team.team_name }}</label>
 				<h1 id="score{{ participant.id }}">
-				-
+				{{ participant.score }}
 				</h1>
 			</div>
 		{% endfor %}
@@ -29,16 +29,14 @@
 			<span class="{{ counter.name }}" style="position:relative">
 				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.nextElementSibling.stepDown();counter({{ counter.id }})"></button>
 				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.stepUp();counter({{ counter.id }})" ></button>
-				<input type="number" step="1" value="0" id="{{ counter.id }}" onchange="counter({{ counter.id }})">
+				<input type="number" step="1" value="0" id="{{ counter.id }}" onchange="counter({{ counter.id }})" class="value">
 			</span>
 		{% endfor %}
 	</div>
 	
-
-	
 	<div class="StandardButtons">
 	{% for scoringType in standard_buttons_list %}
-		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
+		<button class="{{ scoringType.input_group }} value" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
 	
@@ -48,7 +46,7 @@
 			<span class="{{ counter.name }}" style="position:relative">
 				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.nextElementSibling.stepDown();counter({{ counter.id }})" ></button>
 				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.stepUp();counter({{ counter.id }})" ></button>
-				<input type="number" step="1" value="0" id="{{ counter.id }}" change="counter({{ counter.id }})">
+				<input type="number" step="1" value="0" id="{{ counter.id }}" change="counter({{ counter.id }})"class="value">
 			</span>
 		{% endfor %}
 	</div>
@@ -70,6 +68,7 @@
 	
 	<div class="deleteButtonDiv">
 		<table id="deleteButtonTable" style="width:90%; margin:auto">
+			<tbody id="deleteButtonBody">
 			<tr>
 				<th>Delete</th>
 				<th>ID</th>
@@ -77,6 +76,7 @@
 				<th>Multiplier</th>
 				<th>Time</th>
 			</tr>
+			</tbody>
 		</table>
 	</div>
 {% endblock %}
@@ -137,15 +137,58 @@ var webSocket = new WebSocket(
 		
 		switch(data['type']) {
 			case 'deleteButton':
-				document.getElementById("deleteButtonTable").innerHTML +=
-					"<tr><td><button onclick='deleteInDb(this.parentNode.nextElementSibling)'>Delete</button></td>" + 
-					"<td data-scoringType_id='" + data['scoringType_id'] + "'>" + data['action_id'] + "</td>" +
-					"<td>" + data['scoringType_name'] + "</td>" + 
-					"<td>" + data['multiplier'] + "</td>" +
-					"<td>" + data['time'] + "</td></tr>"
+				drawDeleteButtonRow(data['scoring_type_id'], data['action_id'], data['scoring_type_name'], data['multiplier'], data['time']);
 				break;
 			case 'clientUpdateScore':
 				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
+				break;
+			case 'changeTeam':
+				var delete_table = document.getElementById('deleteButtonTable')
+				for (var i = delete_table.rows.length-1; i > 0; i--){
+					delete_table.deleteRow(i);
+				}
+				//sets all values to 0, and redraws buttons at 0
+				for (i in value_elems){
+					value_elems[i].value = 0;
+					if(value_elems[i].nodeName == "BUTTON"){
+						drawButton(value_elems[i]);
+					}
+				}
+				//generate all delete buttons and update values
+				//data['actions'] is a list of dictionaries with keys: 'scoring_type', 'value', 'multiplier', 'str_time'
+				var prev_scoring_type = 0;
+				var cont = true;
+				for (i in data['actions']){ // loop through all actions in db
+					if (data['actions'][i]['scoring_type'] != prev_scoring_type){
+						prev_scoring_type = data['actions'][i]['scoring_type'];
+						if (cont == false && elem.nodeName =="BUTTON"){ //draw previous button, since its value is up to date
+							drawButton(elem); //previous button elem
+						}
+						cont = false; //don't auto-skip anymore
+						try {
+							elem = document.getElementById(data['actions'][i]['scoring_type']);
+							elem.value = data['actions'][i]['value']; //NOT += (resets old value)
+							//build delete button
+							if (elem.nodeName == "BUTTON"){
+								drawDeleteButtonRow(data['actions'][i]['scoring_type'], data['actions'][i]['id'], elem.getAttribute('data-name'), data['actions'][i]['multiplier'], data['actions'][i]['str_time']);
+							}
+						} 
+						catch(err) {
+							cont = true; //skip until new scoring_type, since that scoring_type does not have a button on the judging screen
+							continue;
+						}
+					} else if (cont == true){ //skip actions not on the judging page
+						continue;
+					} else { //scoring_type == prev_scoring_type, AND cont == false
+						elem.value = parseInt(elem.value) + data['actions'][i]['value'];
+						if (elem.nodeName == "BUTTON"){
+							drawDeleteButtonRow(data['actions'][i]['scoring_type'], data['actions'][i]['id'], elem.getAttribute('data-name'), data['actions'][i]['multiplier'], data['actions'][i]['str_time']);
+						}
+					}
+				}
+				if (cont == false){ //draw last action if necessary
+					drawButton(elem);
+				}
 				break;
 		}
     };
@@ -154,6 +197,16 @@ var webSocket = new WebSocket(
         console.error('Websocket closed unexpectedly');
 		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
+
+function drawDeleteButtonRow(scoring_type_id, action_id, scoring_type_name, multiplier, time){
+	document.getElementById("deleteButtonTable").innerHTML +=
+		"<tr><td><button onclick='deleteInDb(this.parentNode.nextElementSibling)'>Delete</button></td>" + 
+		"<td data-scoringType_id='" + scoring_type_id + "'>" + action_id + "</td>" +
+		"<td>" + scoring_type_name + "</td>" + 
+		"<td>" + multiplier + "</td>" +
+		"<td>" + time + "</td></tr>"
+}
+
 
 //sends an action (called in standard() and counter())
 function sendAction(id, type, value=1){
@@ -187,10 +240,15 @@ function deleteInDb(elem){ //<td> elem containing the action_id
 	rowElem.querySelector('button').remove();
 }
 
-var participant_id = 0
+var value_elems = document.querySelectorAll('.value');
+var participant_id = 0;
 function changeTeam(value){
 	participant_id = value;
-	//Get values from server to update values and generate delete buttons
+	//send request to Django to send back all of the team's actions
+	webSocket.send(JSON.stringify({
+		'type':'changeTeam',
+		'participant_id':participant_id,
+	}))
 }
 
 //throws error if no team is selected (called in standard() and counter())
