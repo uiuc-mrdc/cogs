@@ -11,7 +11,12 @@
 {% block body %}
 	<h1>Game #{{ game_id }}</h1>
 	
-	<div id="gameTimer"></div><button onclick="startGame()">Start Game</button>
+	<div>
+		<span id="gameTimer">6:00</span>
+		<button id="start" onclick="startGame()">Start Game</button>
+		<button id="pause" onclick="pauseGame()" style="display:none">Pause Game</button>
+		<button id="restart" onclick="restartGame()" style="display:none">Restart Game</button>
+	</div>
 	
 	<div class="scoreboard">
 		{% for participant in participant_list %}
@@ -93,7 +98,21 @@ function startGame(){
 		'game_id':{{ game_id }},
 	}));
 }
-
+function pauseGame(){
+	webSocket.send(JSON.stringify({
+		'type':'pauseGame',
+		'game_id':{{ game_id }},
+		'time_remaining':time_remaining
+	}));
+}
+function restartGame(){
+	webSocket.send(JSON.stringify({
+		'type':'restartGame',
+		'game_id':{{ game_id }},
+		'time_remaining':time_remaining
+	}));
+}
+var time_remaining
 var intervalKey;
 function startTimer(str_end_time){
 	end_time = new Date(str_end_time).getTime();
@@ -105,7 +124,12 @@ function startTimer(str_end_time){
 		minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
 		seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
 		
-		timer_elem.innerHTML = minutes + ":" + seconds;
+		text = minutes + ":"
+		if (seconds < 10){
+			text += 0;
+		}
+		text += seconds;
+		timer_elem.innerHTML = text;
 		
 		if (time_remaining <=0){
 			timer_elem.innerHTML = 'Game Finished';
@@ -172,7 +196,16 @@ var webSocket = new WebSocket(
 				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
 				break;
 			case 'clientStartGame':
-				startTimer(data['end_time'])
+				startTimer(data['end_time']);
+				document.getElementById('pause').style.display ='';
+				document.getElementById('start').style.display = 'none';
+				document.getElementById('restart').style.display = 'none';
+				break;
+			case 'clientPauseGame':
+				time_remaining = data['time_remaining'];
+				clearInterval(intervalKey);
+				document.getElementById('pause').style.display ='none';
+				document.getElementById('restart').style.display = '';
 				break;
 			case 'changeTeam':
 				var delete_table = document.getElementById('deleteButtonTable')
