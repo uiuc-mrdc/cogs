@@ -1,6 +1,7 @@
 from channels.generic.websocket import WebsocketConsumer
 import json
 from django.utils import timezone
+from datetime import timedelta
 from .models import Action, ScoringType, Team, Game, GameParticipant
 import pytz
 from asgiref.sync import async_to_sync
@@ -95,6 +96,15 @@ class GameConsumer(WebsocketConsumer):
             'actions': action_list
         }))
     
+    def groupStartGame(self, dict_data):
+        async_to_sync(self.channel_layer.group_send)(
+            str(dict_data['game_id']),
+            {
+            'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'end_time':(timezone.now() + timedelta(minutes=6)).astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") #GAME LENGTH
+        })
+    def clientStartGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
     #updates score for all clients in the group for this game_participant's game_id
     def groupUpdateScore(self, game_participant):
         async_to_sync(self.channel_layer.group_send)(
@@ -112,5 +122,6 @@ class GameConsumer(WebsocketConsumer):
         'delete':deleteAction,
         'addStandardAction':addStandardAction,
         'updateCounterAction':updateCounterAction,
-        'changeTeam': changeTeam
+        'changeTeam': changeTeam,
+        'startGame':groupStartGame,
     }

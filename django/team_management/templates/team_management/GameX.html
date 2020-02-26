@@ -11,6 +11,8 @@
 {% block body %}
 	<h1>Game #{{ game_id }}</h1>
 	
+	<div id="gameTimer"></div><button onclick="startGame()">Start Game</button>
+	
 	<div class="scoreboard">
 		{% for participant in participant_list %}
 			<div class="column" style="width:{% widthratio 1 participant_list|length 100 %}%">
@@ -85,6 +87,33 @@
 
 <script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
+function startGame(){
+	webSocket.send(JSON.stringify({
+		'type':'startGame',
+		'game_id':{{ game_id }},
+	}));
+}
+
+var intervalKey;
+function startTimer(str_end_time){
+	end_time = new Date(str_end_time).getTime();
+	timer_elem = document.getElementById('gameTimer')
+	intervalKey = setInterval(function(){
+		now = new Date().getTime();
+		
+		time_remaining = end_time-now;
+		minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+		seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+		
+		timer_elem.innerHTML = minutes + ":" + seconds;
+		
+		if (time_remaining <=0){
+			timer_elem.innerHTML = 'Game Finished';
+			clearInterval(intervalKey);
+		}
+	}, 1000);
+	
+}
 
 //handles standard button presses
 function standard(id){
@@ -141,6 +170,9 @@ var webSocket = new WebSocket(
 				break;
 			case 'clientUpdateScore':
 				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
+				break;
+			case 'clientStartGame':
+				startTimer(data['end_time'])
 				break;
 			case 'changeTeam':
 				var delete_table = document.getElementById('deleteButtonTable')
@@ -207,7 +239,6 @@ function drawDeleteButtonRow(scoring_type_id, action_id, scoring_type_name, mult
 		"<td>" + time + "</td></tr>"
 }
 
-
 //sends an action (called in standard() and counter())
 function sendAction(id, type, value=1){
 	//participant_id = document.getElementById('teamSelector').value
@@ -240,15 +271,15 @@ function deleteInDb(elem){ //<td> elem containing the action_id
 	rowElem.querySelector('button').remove();
 }
 
-var value_elems = document.querySelectorAll('.value');
-var participant_id = 0;
+var value_elems = document.querySelectorAll('.value'); //used when changeTeam action data is retured by Django
+var participant_id = 0; //current team ID //used a lot
 function changeTeam(value){
 	participant_id = value;
 	//send request to Django to send back all of the team's actions
 	webSocket.send(JSON.stringify({
 		'type':'changeTeam',
 		'participant_id':participant_id,
-	}))
+	}));
 }
 
 //throws error if no team is selected (called in standard() and counter())
