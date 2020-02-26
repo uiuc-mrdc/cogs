@@ -97,11 +97,17 @@ class GameConsumer(WebsocketConsumer):
         }))
     
     def groupStartGame(self, dict_data):
+        game_length = 6 #GAME LENGTH (minutes)
+        end_time = timezone.now() + timedelta(minutes=game_length)
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.end_time = end_time
+        game.start_time = end_time - timedelta(minutes=game_length)
+        game.save()
         async_to_sync(self.channel_layer.group_send)(
             str(dict_data['game_id']),
             {
             'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
-            'end_time':(timezone.now() + timedelta(minutes=6)).astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") #GAME LENGTH
+            'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") 
         })
     def clientStartGame(self, dict_data):
         self.send(text_data=json.dumps(dict_data))
