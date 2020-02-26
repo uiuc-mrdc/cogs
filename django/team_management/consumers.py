@@ -35,6 +35,8 @@ class GameConsumer(WebsocketConsumer):
             multiplier = multiplier,
             value = 1)
         action.save()
+        print(timezone.now())
+        print(action.time)
         
         #sends updated score to the group
         self.groupUpdateScore(game_participant)
@@ -79,7 +81,15 @@ class GameConsumer(WebsocketConsumer):
         ).filter(
             deleted=False
         ).order_by('scoring_type', 'id'
-        ).values('id', 'scoring_type', 'value', 'multiplier', str_time = Cast(TruncTime(TruncSecond('time', DateTimeField()), TimeField()), CharField())))
+        ).values(
+            'id',
+            'scoring_type',
+            'value', 
+            'multiplier',
+            #truncates the decimal off the seconds, then truncates down to the time, then casts it as a string
+            str_time = Cast(TruncTime(TruncSecond('time', DateTimeField(), tzinfo=pytz.timezone('UTC')), TimeField(), tzinfo=pytz.timezone('America/Chicago')), CharField())
+        ))
+        
         self.send(text_data=json.dumps({
             'type': 'changeTeam',
             'actions': action_list

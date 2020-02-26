@@ -173,8 +173,8 @@ var webSocket = new WebSocket(
 								drawDeleteButtonRow(data['actions'][i]['scoring_type'], data['actions'][i]['id'], elem.getAttribute('data-name'), data['actions'][i]['multiplier'], data['actions'][i]['str_time']);
 							}
 						} 
-						catch(err) {
-							cont = true; //skip until new scoring_type, since that scoring_type does not have a button on the judging screen
+						catch(err) { //scoring_type is not scored on judging client
+							cont = true; //skip until new scoring_type
 							continue;
 						}
 					} else if (cont == true){ //skip actions not on the judging page
