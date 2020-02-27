@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
+from datetime import timedelta
 
 class Team(models.Model):
     team_name = models.CharField(max_length=30)
@@ -19,8 +20,8 @@ class ScoringType(models.Model): #Table for every way to score. #Autogenerates b
         return self.name
 
 class Game(models.Model):
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_time = models.DateTimeField(default= timezone.now() + timedelta(days=199))
+    end_time = models.DateTimeField(default= timezone.now() + timedelta(days=200))
     finished = models.BooleanField(default=False)
     special_name = models.PositiveSmallIntegerField(default=0) #stores data for special games. ie. 1 means it is a semifinal #not used yet
     

@@ -36,8 +36,6 @@ class GameConsumer(WebsocketConsumer):
             multiplier = multiplier,
             value = 1)
         action.save()
-        print(timezone.now())
-        print(action.time)
         
         #sends updated score to the group
         self.groupUpdateScore(game_participant)
@@ -132,6 +130,18 @@ class GameConsumer(WebsocketConsumer):
             'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
             'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S")
         })
+    def groupFinalizeGame(self, dict_data):
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.finished = True
+        game.save()
+        async_to_sync(self.channel_layer.group_send)(
+            str(dict_data['game_id']),
+            {
+            'type':'clientFinalizeGame', #note that this one directly calls the clientFinalizeGame method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id']
+        })
+    def clientFinalizeGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
     #updates score for all clients in the group for this game_participant's game_id
     def groupUpdateScore(self, game_participant):
         async_to_sync(self.channel_layer.group_send)(
@@ -153,4 +163,5 @@ class GameConsumer(WebsocketConsumer):
         'startGame':groupStartGame,
         'pauseGame':groupPauseGame,
         'restartGame':groupRestartGame,
+        'finalizeGame':groupFinalizeGame,
     }

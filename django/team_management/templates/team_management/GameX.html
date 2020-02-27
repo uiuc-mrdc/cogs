@@ -9,13 +9,14 @@
 
 
 {% block body %}
-	<h1>Game #{{ game_id }}</h1>
+	<h1>Game #{{ game.id }}</h1>
 	
 	<div>
 		<span id="gameTimer">6:00</span>
 		<button id="start" onclick="startGame()">Start Game</button>
 		<button id="pause" onclick="pauseGame()" style="display:none">Pause Game</button>
 		<button id="restart" onclick="restartGame()" style="display:none">Restart Game</button>
+		<button id="finalize" onclick="finalizeGame()" style="display:none">Finalize Game</button>
 	</div>
 	
 	<div class="scoreboard">
@@ -92,27 +93,36 @@
 
 <script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
+{% if game_started %}
+	startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+{% endif %}
 function startGame(){
 	webSocket.send(JSON.stringify({
 		'type':'startGame',
-		'game_id':{{ game_id }},
+		'game_id':{{ game.id }},
 	}));
 }
 function pauseGame(){
 	webSocket.send(JSON.stringify({
 		'type':'pauseGame',
-		'game_id':{{ game_id }},
+		'game_id':{{ game.id }},
 		'time_remaining':time_remaining
 	}));
 }
 function restartGame(){
 	webSocket.send(JSON.stringify({
 		'type':'restartGame',
-		'game_id':{{ game_id }},
+		'game_id':{{ game.id }},
 		'time_remaining':time_remaining
 	}));
 }
-var time_remaining
+function finalizeGame(){
+	webSocket.send(JSON.stringify({
+		'type':'finalizeGame',
+		'game_id':{{ game.id }},
+	}));
+}
+var time_remaining;
 var intervalKey;
 function startTimer(str_end_time){
 	end_time = new Date(str_end_time).getTime();
@@ -132,8 +142,11 @@ function startTimer(str_end_time){
 		timer_elem.innerHTML = text;
 		
 		if (time_remaining <=0){
-			timer_elem.innerHTML = 'Game Finished';
+			timer_elem.innerHTML = 'Time Over';
 			clearInterval(intervalKey);
+			document.getElementById('pause').style.display = 'none';
+			document.getElementById('start').style.display = 'none';
+			document.getElementById('finalize').style.display = '';
 		}
 	}, 1000);
 	
@@ -141,7 +154,8 @@ function startTimer(str_end_time){
 
 //handles standard button presses
 function standard(id){
-	checkTeam()
+	checkTeam();
+	checkGame();
 	button = document.getElementById(id);
 	limit = button.getAttribute('data-limit');
 	if(limit == 0 || button.value < limit){
@@ -154,8 +168,9 @@ function standard(id){
 //handles counter changes
 function counter(id) {
 	checkTeam();
+	checkGame();
 	inputElem = document.getElementById(id);
-	sendAction(id, 'updateCounterAction', parseInt(inputElem.value))
+	sendAction(id, 'updateCounterAction', parseInt(inputElem.value));
 }
 var multiplier = 1;
 
@@ -183,7 +198,7 @@ function drawButton(button){
 //sets up websocket and handles incoming data
 var webSocket = new WebSocket(
         'ws://' + window.location.host +
-        '/ws/game/{{ game_id }}');
+        '/ws/game/{{ game.id }}');
 
     webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
         var data = JSON.parse(e.data);
@@ -197,6 +212,7 @@ var webSocket = new WebSocket(
 				break;
 			case 'clientStartGame':
 				startTimer(data['end_time']);
+				game_active = true;
 				document.getElementById('pause').style.display ='';
 				document.getElementById('start').style.display = 'none';
 				document.getElementById('restart').style.display = 'none';
@@ -206,6 +222,11 @@ var webSocket = new WebSocket(
 				clearInterval(intervalKey);
 				document.getElementById('pause').style.display ='none';
 				document.getElementById('restart').style.display = '';
+				break;
+			case 'clientFinalizeGame':
+				game_active = false;
+				document.getElementById('finalize').style.display = 'none'
+				document.getElementById('gameTimer').innerHTML = "Game Finalized";
 				break;
 			case 'changeTeam':
 				var delete_table = document.getElementById('deleteButtonTable')
@@ -281,7 +302,7 @@ function sendAction(id, type, value=1){
 		'participant_id':participant_id,
 		'value':value,
 		'multiplier':multiplier,
-		'game_id':{{ game_id }},
+		'game_id':{{ game.id }},
     }));
 }
 
@@ -315,6 +336,13 @@ function changeTeam(value){
 	}));
 }
 
+var game_active = {% if game_started and not game.finished %}true{% else %}false{% endif %};
+function checkGame(){
+	if (game_active == false){
+		alert("Game is not active, cannot accept inputs");
+		throw new Error("Game is not active. This means the game is either not started, or already finalized");
+	}
+}
 //throws error if no team is selected (called in standard() and counter())
 function checkTeam(){
 	if(participant_id == '0'){
