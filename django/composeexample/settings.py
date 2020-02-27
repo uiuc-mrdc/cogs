@@ -77,7 +77,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("172.20.0.1", 6379)], #not sure how to make this work for everyone, but it works for me (Michael) Probably some docker network stuff
+            "hosts": [("redis", 6379)],
         },
     },
 }
