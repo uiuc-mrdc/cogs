@@ -17,6 +17,8 @@ class GameConsumer(WebsocketConsumer):
         self.accept()
 
     def disconnect(self, close_code):
+        #removes itself from the group
+        async_to_sync(self.channel_layer.group_discard)(str(self.scope["url_route"]["kwargs"]["game_id"]), self.channel_name)
         pass
 
     def receive(self, text_data): #Only JSON messages from the client pass through this
