@@ -9,7 +9,7 @@ input[type=number] {
 	text-align: center;
 	font-size: 1em;
 	padding: .25em;
-	margin: 0em 0.25em 0em 0em;
+	margin: 1em 0.25em 1em 0em;
 
 }
 
@@ -77,8 +77,8 @@ button.down {
 	top: 1.125em;
 }
 
-.dragon_counters {
-	margin: 20px 0px 20px 0px;
+.counters {
+	margin: 20px 0px 0px 0px;
 }
 
 .Standard {
@@ -90,7 +90,8 @@ button.down {
   text-decoration: none;
   display: inline-block;
   font-size: 1em;
-  border-radius: .5em
+  border-radius: .5em;
+  margin: .25em
 }
 
 th, td {
