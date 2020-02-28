@@ -56,3 +56,35 @@ class GameConsumer(WebsocketConsumer):
         'addStandardAction':addStandardAction,
         'addCounterAction':addCounterAction,
     }
+    
+class ExternalScriptConsumer(WebsocketConsumer):
+    def connect(self):
+        #adds itself to the group 'timer_only'
+        async_to_sync(self.channel_layer.group_add)('timer_only', self.channel_name)
+        self.accept()
+
+    def disconnect(self, close_code):
+        #removes itself from the group
+        async_to_sync(self.channel_layer.group_discard)('timer_only', self.channel_name)
+        pass
+    
+    def StartGame(self, dict_data): #sends end_time and game_id #also used to restart the game after pausing
+        self.send(text_data=json.dumps(dict_data))
+
+    def PauseGame(self, dict_data): #sends time_remaining (in milliseconds) and game_id
+        self.send(text_data=json.dumps(dict_data))
+
+    def FinalizeGame(self, dict_data): #sends game_id
+        self.send(text_data=json.dumps(dict_data))
+        
+    def groupUpdateScore(self, dict_data): ##Needs to be sent game_id and participant_id
+        game_participant = GameParticipant.objects.get(pk=dict_data['participant_id'])
+        
+        async_to_sync(self.channel_layer.group_send)(
+            dict_data['game_id'],
+            {
+            'type':'clientUpdateScore',
+            'participant_id':game_participant.id,
+            'score':game_participant.calculateScore(),
+        })
+    
