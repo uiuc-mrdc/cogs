@@ -29,6 +29,7 @@ class GameParticipant(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     score = models.IntegerField(default=0)
+    color = models.CharField(max_length=10, default ="gray")
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), self.team.team_name])
         
