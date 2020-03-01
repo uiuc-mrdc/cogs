@@ -4,6 +4,7 @@ body{
 
 .logo {
 	max-height:30vh;
+	width:auto;
 	display:block;
 	margin: 0 auto 0 auto;
 }

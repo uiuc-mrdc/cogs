@@ -7,27 +7,31 @@
 	<body>
 		<a href="/" style="opacity:0; position:fixed">Home Page</a>
 
-		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo" width="994" height="329">
-		<h1>Game #{{ game_id }}</h1>
+		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
 		<div class="column" style="width:50%">
 		<span class="timer" id="gameTimer">6:00</span>
 		</div>
 		<div class="column" style="position:relative; height:{% widthratio participant_list|length 1 10 %}vh">
 		{% for participant in participant_list|dictsortreversed:"score" %}
-				<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 10 %}vh">
-					<span class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }}
-						<span class="score" id="score{{ participant.id }}">
-							{{ participant.score }}
-						</span>
+			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 10 %}vh">
+				<span class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }}
+					<span class="score" id="score{{ participant.id }}">
+						{{ participant.score }}
 					</span>
-				</div>
+				</span>
+			</div>
+		{% empty %} {# displays if participant_list is empty #}
+			<h1>No Teams for Game #{{ game.id }}</h1>
 		{% endfor %}
 		</div>
-		<button onclick="repositionTeams()">Click me</button>
 	</div>
 		
 	</body>
 	<script>
+	
+{% if game_started %}
+	startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+{% endif %}
 	
 var time_remaining;
 var intervalKey;
@@ -73,7 +77,7 @@ function repositionTeams() {
 //sets up websocket and handles incoming data
 var webSocket = new WebSocket(
         'ws://' + window.location.host +
-        '/ws/game/{{ game_id }}');
+        '/ws/game/{{ game.id }}');
 
     webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
         var data = JSON.parse(e.data);
