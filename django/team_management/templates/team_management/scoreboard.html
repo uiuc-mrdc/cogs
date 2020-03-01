@@ -5,8 +5,10 @@
 		
 	</head>
 	<body>
-		<a href="/" style="opacity:0; position:fixed">Home Page</a>
-
+		<a href="/" style="opacity:0; position:fixed; width:10vw; height:10vh">Home Page</a>
+		{% if game.id > 1 %}<a href="{% url 'scoreboard' game_id=game.id|add:"-1" %}" style="opacity:0; position:fixed; bottom:0; width:10vw; height:10vh">Prev</a>{% endif %}
+		<a href="{% url 'scoreboard' game_id=game.id|add:"1" %}" style="opacity:0; position:fixed; bottom:0; right:0; width:10vw; height:10vh">Next</a>
+		
 		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
 		<div class="column" style="width:50%">
 		<span class="timer" id="gameTimer">6:00</span>
