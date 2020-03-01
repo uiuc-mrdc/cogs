@@ -1,0 +1,41 @@
+body{
+	font-family:arial;
+}
+
+.logo {
+	max-height:30vh;
+	display:block;
+	margin: 0 auto 0 auto;
+}
+
+.column {
+	width:50%;
+	float: left;
+	text-align:center;
+}
+
+.score {
+	font-size:7vh;
+	font-weight:bold;
+}
+.team {
+	display:block;
+	width:85%;
+	position:absolute;
+	-moz-transition-duration: 1s;
+	-webkit-transition-duration: 1s;
+	-ms-transition-duration: 1s;
+}
+.timer {
+	font-size:25vh;
+}
+
+.teamName {
+	display:block;
+	text-align:center;
+	font-size: 7vh;
+	width:90%;
+	margin: 1vh auto 1vh auto;
+	border-radius: .5em;
+	border: .1em solid black;
+}
