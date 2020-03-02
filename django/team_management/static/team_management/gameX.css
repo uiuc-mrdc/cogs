@@ -112,7 +112,7 @@ th, td {
 }
 
 input[type=radio] {
-	position:fixed;
+	position:absolute;
 	opacity:0;
 }
 

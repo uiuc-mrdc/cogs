@@ -1,0 +1,116 @@
+<html>
+	<head>
+		{% load static %}
+	    <link rel="stylesheet" href="{% static 'team_management/scoreboard.css' %}">
+		
+	</head>
+	<body>
+		<a href="/" style="opacity:0; position:fixed; width:10vw; height:10vh">Home Page</a>
+		{% if game.id > 1 %}<a href="{% url 'scoreboard' game_id=game.id|add:"-1" %}" style="opacity:0; position:fixed; bottom:0; width:10vw; height:10vh">Prev</a>{% endif %}
+		<a href="{% url 'scoreboard' game_id=game.id|add:"1" %}" style="opacity:0; position:fixed; bottom:0; right:0; width:10vw; height:10vh">Next</a>
+		
+		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
+		<div class="column" style="width:50%">
+		<span class="timer" id="gameTimer">6:00</span>
+		</div>
+		<div class="column" style="position:relative; height:{% widthratio participant_list|length 1 13 %}vh">
+		{% for participant in participant_list|dictsortreversed:"score" %}
+			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh; background-color: {{ participant.color }}">
+				<span class="teamName">{{ participant.team.team_name }}</span>
+				<span class="score" id="score{{ participant.id }}">{{ participant.score }}</span>
+			</div>
+		{% empty %} {# displays if participant_list is empty #}
+			<h1>No Teams for Game #{{ game.id }}</h1>
+		{% endfor %}
+		</div>
+	</div>
+		
+	</body>
+	<script>
+	
+{% if game_started %}
+	startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+{% endif %}
+	
+var time_remaining;
+var intervalKey;
+function startTimer(str_end_time){
+	end_time = new Date(str_end_time).getTime();
+	timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
+	intervalKey = setInterval(function(){
+		now = new Date().getTime();
+		
+		time_remaining = end_time-now;
+		minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+		seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+		
+		text = minutes + ":"
+		if (seconds < 10){
+			text += 0;
+		}
+		text += seconds;
+		timer_elem.innerHTML = text;
+		
+		if (time_remaining <=0){
+			timer_elem.innerHTML = 'Time Over';
+			clearInterval(intervalKey);
+		}
+	}, 1000);
+	
+}
+
+teams = [
+	{% for participant in participant_list|dictsortreversed:"score" %}
+		{'id':"team{{ participant.id }}", 'score':{{ participant.score }}},
+	{% endfor %}
+]
+
+function repositionTeams() {
+	teams.sort(function(a, b){return b.score - a.score})
+	
+	for(var i=0; i< teams.length; i++){
+		document.getElementById(teams[i]['id']).style.top = (i * 10) + "vh"
+	}
+}
+	
+//sets up websocket and handles incoming data
+var webSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/game/{{ game.id }}');
+
+    webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
+        var data = JSON.parse(e.data);
+		
+		switch(data['type']) {
+			case 'clientUpdateScore':
+				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
+				for (var i=0; i<teams.length; i++){
+					if (teams[i]['id'] == "team" + data['participant_id']){
+						teams[i]['score'] = data['score'];
+					}
+				}
+				repositionTeams();
+				break;
+			case 'clientStartGame':
+				startTimer(data['end_time']);
+				game_active = true;
+				break;
+			case 'clientPauseGame':
+				time_remaining = data['time_remaining'];
+				clearInterval(intervalKey);
+
+				break;
+			case 'clientFinalizeGame':
+				game_active = false;
+				document.getElementById('gameTimer').innerHTML = "Scores Finalized";
+				break;
+		}
+    };
+	
+    webSocket.onclose = function(e) {
+        console.error('Websocket closed unexpectedly');
+		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
+    };
+	
+	</script>
+</html>
