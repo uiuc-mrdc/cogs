@@ -6,7 +6,7 @@ body{
 	max-height:30vh;
 	width:auto;
 	display:block;
-	margin: 0 auto 0 auto;
+	margin: 0 auto 5vh auto;
 }
 
 .column {
@@ -18,25 +18,31 @@ body{
 .score {
 	font-size:7vh;
 	font-weight:bold;
+	width: 25%;
 }
+
 .team {
 	display:block;
 	width:85%;
 	position:absolute;
+	left:7.5%; /* centers them inside the 85% width */
 	-moz-transition-duration: 1s;
 	-webkit-transition-duration: 1s;
 	-ms-transition-duration: 1s;
+	
+	text-align:center;
+	font-size: 7vh;
+	border-radius: .5em;
+	padding: 1vh;
+	border: 1vh solid black;
+	
 }
+
 .timer {
 	font-size:25vh;
 }
 
 .teamName {
-	display:block;
-	text-align:center;
-	font-size: 7vh;
-	width:90%;
-	margin: 1vh auto 1vh auto;
-	border-radius: .5em;
-	border: .1em solid black;
+	width: 75%;
+	float: left;
 }

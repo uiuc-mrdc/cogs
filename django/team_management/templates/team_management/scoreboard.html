@@ -13,14 +13,11 @@
 		<div class="column" style="width:50%">
 		<span class="timer" id="gameTimer">6:00</span>
 		</div>
-		<div class="column" style="position:relative; height:{% widthratio participant_list|length 1 10 %}vh">
+		<div class="column" style="position:relative; height:{% widthratio participant_list|length 1 13 %}vh">
 		{% for participant in participant_list|dictsortreversed:"score" %}
-			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 10 %}vh">
-				<span class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }}
-					<span class="score" id="score{{ participant.id }}">
-						{{ participant.score }}
-					</span>
-				</span>
+			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh; background-color: {{ participant.color }}">
+				<span class="teamName">{{ participant.team.team_name }}</span>
+				<span class="score" id="score{{ participant.id }}">{{ participant.score }}</span>
 			</div>
 		{% empty %} {# displays if participant_list is empty #}
 			<h1>No Teams for Game #{{ game.id }}</h1>
