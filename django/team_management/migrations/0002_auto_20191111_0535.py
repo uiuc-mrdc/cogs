@@ -35,10 +35,10 @@ def initializeDb(apps, schema_editor):
     
     Game.objects.create(start_time=timezone.now(), end_time=timezone.now())
     
-    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1))
-    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1))
-    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1))
-    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1))
+    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="yellow")
+    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="red")
+    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1), color="blue")
+    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1), color="green")
     
     from django.contrib.auth.models import User
     superuser = User.objects.create_superuser(
