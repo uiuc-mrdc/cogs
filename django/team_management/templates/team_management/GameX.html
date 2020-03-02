@@ -91,6 +91,11 @@
 			</tbody>
 		</table>
 	</div>
+	<div id="opaque"></div>
+	<div id="dialogBox">
+		<h2>Time Over. Please Aknowledge</h2>
+		<button onclick="this.parentNode.style.display = 'none'; document.getElementById('opaque').style.display = 'none'">OK</button>
+	</div>
 {% endblock %}
 
 
@@ -150,6 +155,8 @@ function startTimer(str_end_time){
 		
 		if (time_remaining <=0){
 			timer_elem.innerHTML = 'Time Over';
+			document.getElementById('opaque').style.display ='block';
+			document.getElementById('dialogBox').style.display ='block';
 			clearInterval(intervalKey);
 			document.getElementById('pause').style.display = 'none';
 			document.getElementById('start').style.display = 'none';
