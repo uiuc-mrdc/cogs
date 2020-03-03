@@ -145,3 +145,5 @@ os.path.join(BASE_DIR, "static"),
 ("custom_css", os.path.join('static/css')),
 
 )
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

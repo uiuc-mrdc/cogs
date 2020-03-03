@@ -23,4 +23,6 @@ urlpatterns = [
     path('games/', views.games, name='games'),
     path('games/<int:game_id>/', views.gameX, name='gameX'),
     path('scoreboard/<int:game_id>/', views.scoreboard, name='scoreboard'),
+    path('add_phone/', views.addPhone, name='add_phone'),
+    path('post_phone/', views.postPhone, name='post_phone'),
 ]

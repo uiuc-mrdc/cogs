@@ -1,15 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db import connection
-from django.shortcuts import redirect
-from django.http import HttpResponse
-
+from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.urls import reverse
+from django.contrib.auth.decorators import permission_required
 
-from .models import ScoringType, Team, Game, GameParticipant
+from .models import ScoringType, Team, Game, GameParticipant, Phone
 
 def index(request):
     return render(request, "team_management/index.html", {})
-    
+
+@permission_required('team_management.judge')
 def gameX(request, game_id): #game_id comes from the url
     dragon_list = ScoringType.objects.filter(input_style="Counter")
     treasurebox_list = ScoringType.objects.filter(input_style="Counter2")
@@ -48,3 +50,30 @@ def scoreboard(request, game_id):
 
 def games(request):
     return render(request, 'team_management/games.html', {})
+
+def postPhone(request):
+    try:
+        print(request.POST)
+        team = Team.objects.get(pk=request.POST['team_id'])
+        print('no error')
+    except:
+        teams_list = Team.objects.all()
+        context = {'teams_list':teams_list,
+            'error_message': "Please select a team"
+            }
+        return render(request, 'team_management/addPhone.html', context)
+    else:
+    
+        phone = Phone(
+            number = request.POST['num'],
+            team = team,
+            )
+        phone.save()
+        return HttpResponseRedirect(reverse('index'))
+
+@login_required
+def addPhone(request):
+    teams_list = Team.objects.all()
+    print(teams_list)
+    context={'teams_list':teams_list}
+    return render(request, 'team_management/addPhone.html', context)

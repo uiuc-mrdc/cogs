@@ -47,6 +47,23 @@ def initializeDb(apps, schema_editor):
         password = "password", #Obviously don't leave this as is
         )
     
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+
+    content_type = ContentType.objects.get_for_model(Game)
+    permission = Permission.objects.create(
+        codename='judge',
+        name='judge',
+        content_type=content_type,
+    )
+    
+    judge = User.objects.create_user('judge', 'test@test.com', 'password')
+    judge.user_permissions.add(permission)
+    judge.save()
+    
+    team = User.objects.create_user('teamuser', 'test@test.com', 'password')
+    team.save()
+    
 class Migration(migrations.Migration):
 
     dependencies = [

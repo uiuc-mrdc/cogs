@@ -10,6 +10,10 @@ class Team(models.Model):
     def __str__(self):
         return self.team_name
 
+class Phone(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    number = models.CharField(max_length=15)
+
 class ScoringType(models.Model): #Table for every way to score. #Autogenerates buttons on the judging page
     name = models.CharField(max_length=40)
     limit = models.IntegerField(default=0)
