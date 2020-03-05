@@ -4,13 +4,7 @@ from django.db import migrations
 from django.utils import timezone
 from team_management.models import ScoringType, Team, Game, GameParticipant
 
-
 def initializeDb(apps, schema_editor):
-    Team.objects.create(team_name="Lion", school_name="UIUC")
-    Team.objects.create(team_name="Phoenix", school_name="Valpo")
-    Team.objects.create(team_name="Hydra", school_name="IIT")
-    Team.objects.create(team_name="Unicorn", school_name="College of Dupage")
-    
     ScoringType.objects.create(name="Green Dragon ball", limit=0, value=16, extra_data="#00FF00", input_style="Counter")
     ScoringType.objects.create(name="Blue Dragon ball", limit=0, value=16, extra_data="#0000FF", input_style="Counter")
     ScoringType.objects.create(name="Red Dragon ball", limit=0, value=12, extra_data="#FF0000", input_style="Counter")
@@ -33,12 +27,7 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Orange Treasure ball", limit=0, value=-3, extra_data="#FFA500", input_style="Counter2")
     ScoringType.objects.create(name="Pink Treasure ball", limit=0, value=-3, extra_data="#ffc0cb", input_style="Counter2")
     
-    Game.objects.create(start_time=timezone.now(), end_time=timezone.now())
-    
-    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="yellow")
-    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="red")
-    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1), color="blue")
-    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1), color="green")
+    Game.objects.create()
     
     from django.contrib.auth.models import User
     superuser = User.objects.create_superuser(
@@ -59,10 +48,28 @@ def initializeDb(apps, schema_editor):
     
     judge = User.objects.create_user('judge', 'test@test.com', 'password')
     judge.user_permissions.add(permission)
-    judge.save()
+    judge.save() #needs save for the permission
     
-    team = User.objects.create_user('teamuser', 'test@test.com', 'password')
-    team.save()
+    audience = User.objects.create_user('audience', 'test@test.com', 'password')
+    
+    import csv
+    import random
+
+    with open('/code/TeamData.csv', newline='') as csvfile:
+        csvreader = csv.DictReader(csvfile, dialect='excel')
+        s = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        passlen = 15
+        for team in csvreader:
+            password = "".join(random.sample(s, passlen))
+            user = User.objects.create_user(team['Name'], team['Email'], password)
+            Team.objects.create(user=user,  team_name=team['Name'], school_name=team['School'], abbr=team['Abbr'], capt_name=team['Captain Name'])
+    
+    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="yellow")
+    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="red")
+    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1), color="blue")
+    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1), color="green")
+    
+
     
 class Migration(migrations.Migration):
 

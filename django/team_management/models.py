@@ -2,10 +2,14 @@ from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.auth.models import User
 
 class Team(models.Model):
-    team_name = models.CharField(max_length=30)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    team_name = models.CharField(max_length=70)
     school_name = models.CharField(max_length=500)
+    abbr = models.CharField(max_length=8, default="")
+    capt_name = models.CharField(max_length=25)
     #logo?
     def __str__(self):
         return self.team_name
