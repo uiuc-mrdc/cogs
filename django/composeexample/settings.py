@@ -149,6 +149,6 @@ os.path.join(BASE_DIR, "static"),
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER= 'mgale456@gmail.com'
-EMAIL_HOST_PASSWORD = ####use your own account #For Gmail, you must enable "Allow less secure apps"
+EMAIL_HOST_USER= 'MRDCGameServer@gmail.com'
+EMAIL_HOST_PASSWORD = "apricots" #For Gmail, you must enable "Allow less secure apps"
 EMAIL_USE_TLS = True
