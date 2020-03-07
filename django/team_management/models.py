@@ -20,8 +20,8 @@ class ScoringType(models.Model): #Table for every way to score. #Autogenerates b
         return self.name
 
 class Game(models.Model):
-    start_time = models.DateTimeField(default= timezone.now() + timedelta(days=199))
-    end_time = models.DateTimeField(default= timezone.now() + timedelta(days=200))
+    start_time = models.DateTimeField(default= timezone.now() + timedelta(days=399))
+    end_time = models.DateTimeField(default= timezone.now() + timedelta(days=400))
     finished = models.BooleanField(default=False)
     special_name = models.PositiveSmallIntegerField(default=0) #stores data for special games. ie. 1 means it is a semifinal #not used yet
     
@@ -79,7 +79,7 @@ class GameParticipant(models.Model):
 class Action(models.Model): #Table for every scoring action
     scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
     game_participant = models.ForeignKey(GameParticipant, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=timezone.now())
+    time = models.DateTimeField(default=timezone.now)
     multiplier = models.FloatField(default=1)
     value = models.IntegerField(default=0)
     deleted = models.BooleanField(default=False)

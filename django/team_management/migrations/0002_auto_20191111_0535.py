@@ -33,7 +33,7 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Orange Treasure ball", limit=0, value=-3, extra_data="#FFA500", input_style="Counter2")
     ScoringType.objects.create(name="Pink Treasure ball", limit=0, value=-3, extra_data="#ffc0cb", input_style="Counter2")
     
-    Game.objects.create(start_time=timezone.now(), end_time=timezone.now())
+    Game.objects.create()
     
     GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="yellow")
     GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="red")
