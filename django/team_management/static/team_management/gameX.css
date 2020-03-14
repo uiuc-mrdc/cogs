@@ -109,6 +109,7 @@ th, td {
 	border-radius: .5em;
 	padding: .5em;
 	border: .25em dashed black;
+	opacity: .5;
 }
 
 input[type=radio] {
@@ -119,6 +120,7 @@ input[type=radio] {
 input[type=radio]:checked + label {
   font-weight: bold;
   border: .25em solid black;
+  opacity: 1;
 }
 
 #opaque {
