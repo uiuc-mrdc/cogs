@@ -9,21 +9,25 @@
 {% block body %}
 
 <h1 class="title">Current Game</h1>
-<div class="game">
-	<div id="gameTimer" class="column" style="width:10%">Timer</div>
-	{% for participant in participant_list %}
-		<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
-			<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }}</div>
+{% if participant_list %}
+	<div class="game">
+		<div id="gameTimer" class="column" style="width:10%">Loading...</div>
+		{% for participant in participant_list %}
+			<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
+				<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }}</div>
+			</div>
+		{% endfor %}
+		<div class="column" style="width:10%">
+			{% if perms.team_management.judge %}
+				<a href="{% url 'gameX' game_id=1 %}">Judging</a>
+				<br>
+			{% endif %}
+			<a href="{% url 'scoreboard' game_id=1 %}">Scoreboard</a>
 		</div>
-	{% endfor %}
-	<div class="column" style="width:10%">
-		{% if perms.team_management.judge %}
-			<a href="{% url 'gameX' game_id=1 %}">Judging</a>
-			<br>
-		{% endif %}
-		<a href="{% url 'scoreboard' game_id=1 %}">Scoreboard</a>
 	</div>
-</div>
+{% else %}
+<div>Estimated time to next game: </div>
+{% endif %}
 
 <!-------------------------------------------------------------->
 
@@ -71,7 +75,6 @@
 					<a href="{% url 'scoreboard' game_id=participant.game_id %}">Scoreboard</a>
 				</div>
 			{% endif %}
-
 		{% endfor %}
 	</div>
 {% endfor %}
@@ -80,6 +83,81 @@
 
 <script>
 {% block script %}
+{% if messages %}
+	{% for message in messages %}
+		alert("{{ message }}")
+	{% endfor %}
+{% endif %}
+
+var intervalKey = null;
+
+{% if participant_list %}
+	{% with participant=participant_list|first %}
+		pause_time={{ participant.game.pause_time.seconds }};
+		startTimer("{{ participant.game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ participant.game.end_time|time:"H:i:s" }}");
+	{% endwith %}
+{% endif %}
+
+var time_remaining;
+function startTimer(str_end_time){
+	end_time = new Date(str_end_time).getTime();
+	timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
+	if (intervalKey == null){
+		intervalKey = setInterval(function(){
+			now = new Date().getTime();
+			if (pause_time > 0){
+				time_remaining = pause_time*1000;
+				clearInterval(intervalKey);
+			} else {
+				time_remaining = end_time-now;
+			}
+			minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+			seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+			
+			text = minutes + ":"
+			if (seconds < 10){
+				text += 0;
+			}
+			text += seconds;
+			timer_elem.innerHTML = text;
+			
+			if (time_remaining <=0){
+				timer_elem.innerHTML = 'Time Over<br>Finalizing Score';
+				clearInterval(intervalKey);
+				intervalKey = undefined;
+			}
+		}, 1000);
+	}
+}
+
+//sets up websocket and handles incoming data
+var webSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/gameQueue');
+
+webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
+	var data = JSON.parse(e.data);
+	
+	switch(data['type']) {
+
+		case 'StartGame':
+			startTimer(data['end_time']);
+			break;
+		case 'PauseGame':
+			time_remaining = data['time_remaining'];
+			clearInterval(intervalKey);
+			intervalKey = null;
+			break;
+		case 'FinalizeGame':
+			document.getElementById('gameTimer').innerHTML = "Game Finalized" + "<br>Time to next game:";
+			break;
+	}
+};
+
+webSocket.onclose = function(e) {
+	console.error('Websocket closed unexpectedly');
+	//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
+};
 
 {% endblock %}
 </script>

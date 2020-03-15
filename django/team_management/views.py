@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.contrib import messages
 
 from .models import ScoringType, Team, Game, GameParticipant, Phone
 
@@ -49,7 +51,14 @@ def scoreboard(request, game_id):
     return render(request, 'team_management/scoreboard.html', context)
 
 def games(request):
-    participant_list = Game.objects.get(finished=False, start_time__lt=timezone.now()).gameparticipant_set.all().select_related('team')
+    try:
+        current_game = Game.objects.get(finished=False, start_time__lt=timezone.now()).gameparticipant_set.all().select_related('team').select_related('game')
+    except ObjectDoesNotExist:
+        current_game = []
+    except MultipleObjectsReturned:
+        messages.error(request, "Oops, there are >1 active games. Make sure only one game is started without being finalized")
+        current_game = []
+        
     
     upcoming_games = Game.objects.filter(finished=False, start_time__gt=timezone.now())
     upcoming_games_list = []
@@ -62,7 +71,7 @@ def games(request):
         finished_games_list.append(obj.gameparticipant_set.all().select_related('team'))
     
     context = {
-        "participant_list":participant_list,
+        "participant_list":current_game,
         "upcoming_games_list":upcoming_games_list,
         "finished_games_list":finished_games_list,
     }

@@ -31,6 +31,7 @@ class Game(models.Model):
     start_time = models.DateTimeField(default= timezone.now() + timedelta(days=399))
     end_time = models.DateTimeField(default= timezone.now() + timedelta(days=400))
     finished = models.BooleanField(default=False)
+    pause_time = models.DurationField(default=timedelta(minutes=0))
     special_name = models.PositiveSmallIntegerField(default=0) #stores data for special games. ie. 1 means it is a semifinal #not used yet
     
 class GameParticipant(models.Model):

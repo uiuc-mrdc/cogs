@@ -5,4 +5,5 @@ from . import consumers
 
 websocket_urlpatterns = [
     path("ws/game/<int:game_id>", consumers.GameConsumer, name="gameConsumer"),
+    path("ws/gameQueue", consumers.GameQueueConsumer, name="gameQueueConsumer")
 ]
