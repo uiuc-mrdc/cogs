@@ -10,7 +10,6 @@ input[type=number] {
 	font-size: 1em;
 	padding: .25em;
 	margin: 1em 0.25em 1em 0em;
-
 }
 
 input[type=number]::-webkit-inner-spin-button, 
