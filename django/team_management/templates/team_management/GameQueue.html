@@ -20,10 +20,10 @@
 			{% endfor %}
 			<div class="column" style="width:10%">
 				{% if perms.team_management.judge %}
-					<a href="{% url 'gameX' game_id=1 %}">Judging</a>
+					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
 					<br>
 				{% endif %}
-				<a href="{% url 'scoreboard' game_id=1 %}">Scoreboard</a>
+				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
 			</div>
 		</div>
 	{% else %}
@@ -41,18 +41,15 @@
 				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
 					<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
-				
-				{% if forloop.last %}
-					<div class="column" style="width:10%">
-						{% if perms.team_management.judge %}
-							<a href="{% url 'gameX' game_id=participant.game_id %}">Judging</a>
-							<br>
-						{% endif %}
-						<a href="{% url 'scoreboard' game_id=participant.game_id %}">Scoreboard</a>
-					</div>
-				{% endif %}
-
 			{% endfor %}
+				
+			<div class="column" style="width:10%">
+				{% if perms.team_management.judge %}
+					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<br>
+				{% endif %}
+				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+			</div>
 		</div>
 	{% endfor %}
 </div>
@@ -68,17 +65,15 @@
 				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
 					<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
-				
-				{% if forloop.last %}
-					<div class="column" style="width:10%">
-						{% if perms.team_management.judge %}
-							<a href="{% url 'gameX' game_id=participant.game_id %}">Judging</a>
-							<br>
-						{% endif %}
-						<a href="{% url 'scoreboard' game_id=participant.game_id %}">Scoreboard</a>
-					</div>
-				{% endif %}
 			{% endfor %}
+			
+			<div class="column" style="width:10%">
+				{% if perms.team_management.judge %}
+					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<br>
+				{% endif %}
+				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+			</div>
 		</div>
 	{% endfor %}
 </div>
