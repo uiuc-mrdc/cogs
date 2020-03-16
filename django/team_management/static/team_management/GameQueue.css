@@ -19,3 +19,13 @@
 	text-align: center;
 }
 
+#emptyGame{
+	display:none;
+}
+
+#newGameButton{
+	width:50%;
+	height:4em;
+	margin:1em auto 1em auto;
+	display:block;
+}

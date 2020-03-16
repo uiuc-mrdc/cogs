@@ -72,8 +72,42 @@
 		</div>
 	{% endfor %}
 </div>
+{% if perms.team_management.is_judge %}
+	<button id="newGameButton" onclick="addNewGame()">Add New Game</button>
+{% endif %}
 
-<!--------------------------------------------------------------------------->
+<!----------------------Hidden Blank Games--------------------------------->
+
+	<div id="emptyGame" class="game">
+		<div class="column" style="width:10%">6:00</div>
+		{% for participant in empty_game %}
+			<div class="column" style="width:{% widthratio 1 4 79 %}%">
+				<div class="teamName color{{ forloop.counter }}">
+					<select style="width:90%" data-game_id="null" {% if user.is_authenticated %}onchange="newParticipant(this, {{ forloop.counter }})"{% endif %}>
+						<option value=''></option>
+						{% if user.is_authenticated %}
+							{% if perms.team_management.is_judge %}
+								{% for team in teams_list %}
+									<option value="{{ team.id }}">{{ team.team_name }}</option>
+								{% endfor %}
+							{% elif perms.team_management.is_team %}
+								<option value="{{ user.team_id }}">{{ user.team.team_name }}</option>
+							{% endif %}
+						{% endif %}
+					</select>
+				</div>
+			</div>
+		{% endfor %}
+		<div class="column" style="width:10%">
+			{% if perms.team_management.judge %}
+				<a href="{% url 'gameX' game_id=0 %}">Judging</a>
+				<br>
+			{% endif %}
+			<a href="{% url 'scoreboard' game_id=0 %}">Scoreboard</a>
+		</div>
+	</div>
+	
+<!--------------------------Completed Games----------------------------------->
 
 <div id="CompletedGames">
 	<h1 class="title">Completed Games</h1>
@@ -156,6 +190,12 @@ function newParticipant(select_elem, color_id){
 	}));
 }
 
+function addNewGame(){
+	webSocket.send(JSON.stringify({
+		'type':'newGame',
+	}));
+}
+
 //sets up websocket and handles incoming data
 var webSocket = new WebSocket(
         'ws://' + window.location.host +
@@ -197,6 +237,23 @@ webSocket.onmessage = function(e) { //Function that receives all incoming websoc
 			span_elem.id = data['game_id'] + "_" + data['participant_id'];
 			span_elem.style.fontWeight = 'bold';
 			div_elem.appendChild(span_elem)
+			break;
+		case 'clientNewGame':
+			newGame_elem = document.getElementById('emptyGame').cloneNode(true);
+			newGame_elem.id = data['game_id'];
+			for (var i=1; i<=4; i++){
+				team_div_elem = newGame_elem.querySelector(".color" + i);
+				team_div_elem.id = data['game_id'] + '_color' + i;
+				team_div_elem.querySelector("select").setAttribute('data-game_id', data['game_id'])
+			}
+			for (var link of newGame_elem.querySelectorAll('a')){
+				text = link.getAttribute('href');
+				pos = text.indexOf('0');
+				newtext = text.slice(0,pos) + data['game_id'] + '/';
+				link.setAttribute('href', newtext);
+			}
+			
+			document.getElementById('UpcomingGames').appendChild(newGame_elem);
 			break;
 	}
 };

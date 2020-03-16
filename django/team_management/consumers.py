@@ -254,9 +254,22 @@ class GameQueueConsumer(WebsocketConsumer):
         
     def clientNewParticipant(self, dict_data):
         self.send(text_data=json.dumps(dict_data))
-            
+    
+    def groupNewGame(self, dict_data):
+        new_game = Game.objects.create()
+        async_to_sync(self.channel_layer.group_send)(
+            'game_queue',
+            {
+            'type':'clientNewGame', #note that this one directly calls the clientNewGame method, rather than going through the receive method, since it is in a native python dict
+            'game_id':new_game.id,
+        })
+    
+    def clientNewGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+        
     switcher = {
         'newParticipant':groupNewParticipant,
+        'newGame':groupNewGame,
     }
     
     

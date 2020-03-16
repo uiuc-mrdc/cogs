@@ -71,6 +71,10 @@ def games(request):
                 teams.append({'game_id':game.id, 'color':0})
         upcoming_games_list.append(teams)
     
+    empty_game = []
+    for i in range(4):
+        empty_game.append({})
+    
     teams_list = Team.objects.all()
     
     finished_games = Game.objects.filter(finished=True).order_by('end_time')
@@ -83,6 +87,7 @@ def games(request):
         "upcoming_games_list":upcoming_games_list,
         "teams_list":teams_list,
         "finished_games_list":finished_games_list,
+        "empty_game":empty_game,
     }
     return render(request, 'team_management/GameQueue.html', context)
 
