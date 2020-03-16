@@ -64,6 +64,8 @@ def games(request):
     for obj in upcoming_games:
         upcoming_games_list.append(obj.gameparticipant_set.all().select_related('team'))
     
+    teams_list = Team.objects.all()
+    
     finished_games = Game.objects.filter(finished=True).order_by('end_time')
     finished_games_list =[]
     for obj in finished_games:
@@ -72,6 +74,7 @@ def games(request):
     context = {
         "participant_list":current_game,
         "upcoming_games_list":upcoming_games_list,
+        "teams_list":teams_list,
         "finished_games_list":finished_games_list,
     }
     return render(request, 'team_management/GameQueue.html', context)
