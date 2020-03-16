@@ -13,7 +13,7 @@ from .models import ScoringType, Team, Game, GameParticipant, Phone
 def index(request):
     return render(request, "team_management/index.html", {})
 
-@permission_required('team_management.judge')
+@permission_required('team_management.is_judge')
 def gameX(request, game_id): #game_id comes from the url
     dragon_list = ScoringType.objects.filter(input_style="Counter")
     treasurebox_list = ScoringType.objects.filter(input_style="Counter2")

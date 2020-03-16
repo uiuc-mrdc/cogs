@@ -27,8 +27,6 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Orange Treasure ball", limit=0, value=-3, extra_data="#FFA500", input_style="Counter2")
     ScoringType.objects.create(name="Pink Treasure ball", limit=0, value=-3, extra_data="#ffc0cb", input_style="Counter2")
     
-    Game.objects.create()
-    
     from django.contrib.auth.models import User
     superuser = User.objects.create_superuser(
         username = "MRDC",
@@ -42,7 +40,7 @@ def initializeDb(apps, schema_editor):
     content_type = ContentType.objects.get_for_model(Game)
     judge_perm = Permission.objects.create(
         codename='is_judge',
-        name='is-judge',
+        name='is_judge',
         content_type=content_type,)
     
     judge = User.objects.create_user('judge', 'test@test.com', 'password')
@@ -54,7 +52,7 @@ def initializeDb(apps, schema_editor):
     content_type = ContentType.objects.get_for_model(Team)
     team_perm = Permission.objects.create(
         codename='is_team',
-        name='is-team',
+        name='is_team',
         content_type=content_type,)
     
     import csv
@@ -71,12 +69,10 @@ def initializeDb(apps, schema_editor):
             user.user_permissions.add(team_perm)
             user.save()
     
-    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="1")
-    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="2")
-    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1), color="3")
-    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1), color="4")
-    
-
+    testTeamUser = User.objects.create_user('MRDCTestTeam', 'test@test.com', "password")
+    Team.objects.create(user=testTeamUser,  team_name='MRDCTestTeam', school_name='UIUC', abbr='MRDCTT', capt_name='Michael Gale')
+    testTeamUser.user_permissions.add(team_perm)
+    testTeamUser.save()
     
 class Migration(migrations.Migration):
 

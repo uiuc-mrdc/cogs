@@ -140,6 +140,7 @@ class GameConsumer(WebsocketConsumer):
         end_time = timezone.now() + timedelta(milliseconds=dict_data['time_remaining'])
         game = Game.objects.get(pk=dict_data['game_id'])
         game.end_time = end_time
+        game.pause_time = timedelta(seconds=0)
         game.save()
         #note this is identical to groupStartGame from this point forward
         async_to_sync(self.channel_layer.group_send)(
