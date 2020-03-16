@@ -183,7 +183,7 @@ class GameConsumer(WebsocketConsumer):
             'score':game_participant.calculateScore(),
         })
         async_to_sync(self.channel_layer.group_send)(
-            'all_scores',
+            'game_queue',
             {
             'type':'UpdateScore', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
             'participant_id':game_participant.id,
@@ -209,13 +209,13 @@ class GameQueueConsumer(WebsocketConsumer):
     def connect(self):
         #adds itself to the group 'timer_only'
         async_to_sync(self.channel_layer.group_add)('timer_only', self.channel_name)
-        async_to_sync(self.channel_layer.group_add)('all_scores', self.channel_name)
+        async_to_sync(self.channel_layer.group_add)('game_queue', self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
         #removes itself from the group
         async_to_sync(self.channel_layer.group_discard)('timer_only', self.channel_name)
-        async_to_sync(self.channel_layer.group_discard)('all_scores', self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)('game_queue', self.channel_name)
         pass
     
     def receive(self, text_data): #Only JSON messages from the client pass through this
@@ -235,5 +235,28 @@ class GameQueueConsumer(WebsocketConsumer):
     def UpdateScore(self, dict_data): #sends score, game_id, and participant_id
         self.send(text_data=json.dumps(dict_data))
     
+    def groupNewParticipant(self, dict_data):
+        new_participant = GameParticipant(
+            team = Team.objects.get(pk=dict_data['team_id']),
+            game = Game.objects.get(pk=dict_data['game_id']),
+            color = dict_data['color'],
+        )
+        new_participant.save()
+        async_to_sync(self.channel_layer.group_send)(
+            'game_queue',
+            {
+            'type':'clientNewParticipant', #note that this one directly calls the clientNewParticipant method, rather than going through the receive method, since it is in a native python dict
+            'participant_id':new_participant.id,
+            'team_name':new_participant.team.team_name,
+            'game_id':new_participant.game_id,
+            'color':dict_data['color'],
+        })
+        
+    def clientNewParticipant(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+            
+    switcher = {
+        'newParticipant':groupNewParticipant,
+    }
     
     

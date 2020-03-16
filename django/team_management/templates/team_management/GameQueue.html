@@ -16,7 +16,7 @@
 			<div id="gameTimer" class="column" style="width:10%">Loading...</div>
 			{% for participant in participant_list %}
 				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
-					<div class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+					<div id="{{ participant.game_id }}_color{{ participant.color }}" class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
 			{% endfor %}
 			<div class="column" style="width:10%">
@@ -41,20 +41,20 @@
 			{% for participant in participant_list %}
 				{% if participant.color != 0 %}
 				<div class="column" style="width:{% widthratio 1 4 79 %}%">
-					<div class="teamName color{{ forloop.counter }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+					<div id="{{ participant.game_id }}_color{{ forloop.counter }}" class="teamName color{{ forloop.counter }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
 				{% else %}
 					<div class="column" style="width:{% widthratio 1 4 79 %}%">
-						<div class="teamName color{{ forloop.counter }}">
-							<select style="width:90%">
+						<div id="{{ participant.game_id }}_color{{ forloop.counter }}" class="teamName color{{ forloop.counter }}">
+							<select style="width:90%" data-game_id="{{ participant.game_id }}" {% if user.is_authenticated %}onchange="newParticipant(this, {{ forloop.counter }})"{% endif %}>
 								<option value=''></option>
 								{% if user.is_authenticated %}
 									{% if perms.team_management.is_judge %}
 										{% for team in teams_list %}
-											<option value="team.id">{{ team.team_name }}</option>
+											<option value="{{ team.id }}">{{ team.team_name }}</option>
 										{% endfor %}
 									{% elif perms.team_management.is_team %}
-										<option value="user.team_id">{{ user.team.team_name }}</option>
+										<option value="{{ user.team_id }}">{{ user.team.team_name }}</option>
 									{% endif %}
 								{% endif %}
 							</select>
@@ -82,7 +82,7 @@
 			<div class="column" style="width:10%">0:00</div>
 			{% for participant in participant_list %}
 				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
-					<div class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+					<div id="{{ participant.game_id }}_color{{ participant.color }}" class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
 			{% endfor %}
 			
@@ -147,6 +147,15 @@ function startTimer(str_end_time){
 	}
 }
 
+function newParticipant(select_elem, color_id){
+	webSocket.send(JSON.stringify({
+		'type':'newParticipant',
+		'team_id':select_elem.value,
+		'game_id':select_elem.getAttribute('data-game_id'),
+		'color':color_id,
+	}));
+}
+
 //sets up websocket and handles incoming data
 var webSocket = new WebSocket(
         'ws://' + window.location.host +
@@ -177,6 +186,18 @@ webSocket.onmessage = function(e) { //Function that receives all incoming websoc
 			break;
 		case 'UpdateScore':
 			document.getElementById(data['game_id'] + "_" + data['participant_id']).innerHTML = data['score'];
+			break;
+		case 'clientNewParticipant':
+			div_elem = document.getElementById(data["game_id"] + "_color" + data['color']);
+			div_elem.firstElementChild.remove();
+			div_elem.innerHTML = data['team_name'] + " ";
+			//Creates new span
+			span_elem = document.createElement('span');
+			span_elem.innerHTML = 0;
+			span_elem.id = data['game_id'] + "_" + data['participant_id'];
+			span_elem.style.fontWeight = 'bold';
+			div_elem.appendChild(span_elem)
+			break;
 	}
 };
 
