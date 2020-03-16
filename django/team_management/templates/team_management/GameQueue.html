@@ -3,6 +3,7 @@
 {% block css %}
 	{% load static %}
 	{{ block.super }}
+	<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
     <link rel="stylesheet" href="{% static 'team_management/GameQueue.css' %}">
 {% endblock %}
 
@@ -15,7 +16,7 @@
 			<div id="gameTimer" class="column" style="width:10%">Loading...</div>
 			{% for participant in participant_list %}
 				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
-					<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+					<div class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
 			{% endfor %}
 			<div class="column" style="width:10%">
@@ -38,29 +39,27 @@
 		<div id="{{ participant_list.0.game_id }}" class="game">
 			<div class="column" style="width:10%">6:00</div>
 			{% for participant in participant_list %}
+				{% if participant.color != 0 %}
 				<div class="column" style="width:{% widthratio 1 4 79 %}%">
-					<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+					<div class="teamName color{{ forloop.counter }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
-				{% if forloop.last %}
-					{% load my_filters %}
-					{% for num in forloop.counter|rem_range %}
-						<div class="column" style="width:{% widthratio 1 4 79 %}%">
-							<div class="teamName" style="background-color:gray">
-								<select style="width:90%">
-									<option value=''></option>
-									{% if user.is_authenticated %}
-										{% if perms.team_management.is_judge %}
-											{% for team in teams_list %}
-												<option value="team.id">{{ team.team_name }}</option>
-											{% endfor %}
-										{% elif perms.team_management.is_team %}
-											<option value="user.team_id">{{ user.team.team_name }}</option>
-										{% endif %}
+				{% else %}
+					<div class="column" style="width:{% widthratio 1 4 79 %}%">
+						<div class="teamName color{{ forloop.counter }}">
+							<select style="width:90%">
+								<option value=''></option>
+								{% if user.is_authenticated %}
+									{% if perms.team_management.is_judge %}
+										{% for team in teams_list %}
+											<option value="team.id">{{ team.team_name }}</option>
+										{% endfor %}
+									{% elif perms.team_management.is_team %}
+										<option value="user.team_id">{{ user.team.team_name }}</option>
 									{% endif %}
-								</select>
-							</div>
+								{% endif %}
+							</select>
 						</div>
-					{% endfor %}
+					</div>
 				{% endif %}
 			{% endfor %}
 			<div class="column" style="width:10%">
@@ -83,7 +82,7 @@
 			<div class="column" style="width:10%">0:00</div>
 			{% for participant in participant_list %}
 				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
-					<div class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+					<div class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
 			{% endfor %}
 			

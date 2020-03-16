@@ -61,8 +61,15 @@ def games(request):
     
     upcoming_games = Game.objects.filter(finished=False, start_time__gt=timezone.now())
     upcoming_games_list = []
-    for obj in upcoming_games:
-        upcoming_games_list.append(obj.gameparticipant_set.all().select_related('team'))
+    for game in upcoming_games:
+        teams = list(game.gameparticipant_set.all().order_by('color').select_related('team'))
+        for i in range(4): # fills in missing teams with a simple dictionary
+            try:
+                if int(teams[i].color) != i+1:
+                    teams.insert(i, {'game_id':game.id, 'color':0})
+            except IndexError: #at the end of the list, append until limit is reached
+                teams.append({'game_id':game.id, 'color':0})
+        upcoming_games_list.append(teams)
     
     teams_list = Team.objects.all()
     
