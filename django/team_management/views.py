@@ -58,14 +58,13 @@ def games(request):
     except MultipleObjectsReturned:
         messages.error(request, "Oops, there are >1 active games. Make sure only one game is started without being finalized")
         current_game = []
-        
     
     upcoming_games = Game.objects.filter(finished=False, start_time__gt=timezone.now())
     upcoming_games_list = []
     for obj in upcoming_games:
         upcoming_games_list.append(obj.gameparticipant_set.all().select_related('team'))
     
-    finished_games = Game.objects.filter(finished=True)
+    finished_games = Game.objects.filter(finished=True).order_by('end_time')
     finished_games_list =[]
     for obj in finished_games:
         finished_games_list.append(obj.gameparticipant_set.all().select_related('team'))

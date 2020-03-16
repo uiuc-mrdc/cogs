@@ -113,11 +113,15 @@ class GameConsumer(WebsocketConsumer):
             "timer_only",
             {
             'type':'StartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id'],
             'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") 
         })
     def clientStartGame(self, dict_data):
         self.send(text_data=json.dumps(dict_data))
     def groupPauseGame(self, dict_data):
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.pause_time = timedelta(milliseconds=dict_data['time_remaining'])
+        game.save()
         async_to_sync(self.channel_layer.group_send)(
             str(dict_data['game_id']),
             {
@@ -148,6 +152,7 @@ class GameConsumer(WebsocketConsumer):
             "timer_only",
             {
             'type':'StartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id'],
             'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S")
         })
     def groupFinalizeGame(self, dict_data):
@@ -177,6 +182,14 @@ class GameConsumer(WebsocketConsumer):
             'participant_id':game_participant.id,
             'score':game_participant.calculateScore(),
         })
+        async_to_sync(self.channel_layer.group_send)(
+            'all_scores',
+            {
+            'type':'UpdateScore', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'participant_id':game_participant.id,
+            'score':game_participant.calculateScore(),
+            'game_id':game_participant.game_id
+        })
         
     def clientUpdateScore(self, dict_data): #when received from the group, sends the same data on to the client
         self.send(text_data=json.dumps(dict_data))
@@ -196,11 +209,13 @@ class GameQueueConsumer(WebsocketConsumer):
     def connect(self):
         #adds itself to the group 'timer_only'
         async_to_sync(self.channel_layer.group_add)('timer_only', self.channel_name)
+        async_to_sync(self.channel_layer.group_add)('all_scores', self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
         #removes itself from the group
         async_to_sync(self.channel_layer.group_discard)('timer_only', self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)('all_scores', self.channel_name)
         pass
     
     def receive(self, text_data): #Only JSON messages from the client pass through this
@@ -215,6 +230,9 @@ class GameQueueConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(dict_data))
 
     def FinalizeGame(self, dict_data): #sends game_id
+        self.send(text_data=json.dumps(dict_data))
+        
+    def UpdateScore(self, dict_data): #sends score, game_id, and participant_id
         self.send(text_data=json.dumps(dict_data))
     
     
