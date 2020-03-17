@@ -12,7 +12,7 @@
 		
 		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
 		<div class="column" style="width:50%">
-		<span class="timer" id="gameTimer">6:00</span>
+		<span class="timer" id="gameTimer">{{ game_length }}:00</span>
 		</div>
 		<div class="column" style="position:relative; height:{% widthratio participant_list|length 1 13 %}vh">
 		{% for participant in participant_list|dictsortreversed:"score" %}

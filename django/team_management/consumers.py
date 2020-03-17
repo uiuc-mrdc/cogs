@@ -9,6 +9,8 @@ from django.db.models import CharField, TimeField, DateTimeField
 from django.db.models.functions import Cast
 from django.db.models.functions.datetime import TruncTime, TruncSecond
 
+from . import custom_config as cfg
+
 class GameConsumer(WebsocketConsumer):
     
     def connect(self):
@@ -97,7 +99,7 @@ class GameConsumer(WebsocketConsumer):
         }))
     
     def groupStartGame(self, dict_data):
-        game_length = 6 #GAME LENGTH (minutes)
+        game_length = cfg.game_length #GAME LENGTH (minutes)
         end_time = timezone.now() + timedelta(minutes=game_length)
         game = Game.objects.get(pk=dict_data['game_id'])
         game.end_time = end_time

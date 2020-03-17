@@ -36,14 +36,14 @@
 <div id="UpcomingGames">	
 	{% for participant_list in upcoming_games_list %}
 		<div id="{{ participant_list.0.game_id }}" class="game">
-			<div class="column" style="width:10%">6:00</div>
+			<div class="column" style="width:10%">{{ game_length }}:00</div>
 			{% for participant in participant_list %}
 				{% if participant.color != 0 %}
-				<div class="column" style="width:{% widthratio 1 4 79 %}%">
+				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
 					<div id="{{ participant.game_id }}_color{{ forloop.counter }}" class="teamName color{{ forloop.counter }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
 				</div>
 				{% else %}
-					<div class="column" style="width:{% widthratio 1 4 79 %}%">
+					<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
 						<div id="{{ participant.game_id }}_color{{ forloop.counter }}" class="teamName color{{ forloop.counter }}">
 							<select style="width:90%" data-game_id="{{ participant.game_id }}" {% if user.is_authenticated %}onchange="newParticipant(this, {{ forloop.counter }})"{% endif %}>
 								<option value=''></option>
@@ -78,9 +78,9 @@
 <!----------------------Hidden Blank Game--------------------------------->
 
 	<div id="emptyGame" class="game">
-		<div class="column" style="width:10%">6:00</div>
+		<div class="column" style="width:10%">{{ game_length }}:00</div>
 		{% for participant in empty_game %}
-			<div class="column" style="width:{% widthratio 1 4 79 %}%">
+			<div class="column" style="width:{% widthratio 1 empty_game|length 79 %}%">
 				<div class="teamName color{{ forloop.counter }}">
 					<select style="width:90%" data-game_id="null" {% if user.is_authenticated %}onchange="newParticipant(this, {{ forloop.counter }})"{% endif %}>
 						<option value=''></option>
@@ -187,13 +187,13 @@ function startTimer(str_end_time){
 }
 
 function startBetweenTimer(str_end_time){
-	var end_time = new Date(str_end_time).getTime();
+	var end_time = new Date(str_end_time).getTime(); //stored as miliseconds
 	var timer_elem = document.getElementById('betweenTimer') //saves elem before the loop (more efficient)
 	timer_elem.parentNode.style.display = '';
 	if (betweenIntervalKey == null){
 		betweenIntervalKey = setInterval(function(){
-			now = new Date().getTime();
-			time_remaining = (end_time + 5*60*1000) - now; //Time between matches = 5
+			now = new Date().getTime(); //miliseconds
+			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
 			minutes = Math.abs(Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60)));
 			seconds = Math.abs(Math.floor((time_remaining % (1000 * 60)) / 1000));
 			
@@ -277,7 +277,7 @@ webSocket.onmessage = function(e) { //Function that receives all incoming websoc
 		case 'clientNewGame':
 			newGame_elem = document.getElementById('emptyGame').cloneNode(true);
 			newGame_elem.id = data['game_id'];
-			for (var i=1; i<=4; i++){
+			for (var i=1; i<={{ empty_game|length }}; i++){
 				team_div_elem = newGame_elem.querySelector(".color" + i);
 				team_div_elem.id = data['game_id'] + '_color' + i;
 				team_div_elem.querySelector("select").setAttribute('data-game_id', data['game_id'])

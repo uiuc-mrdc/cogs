@@ -13,7 +13,7 @@
 	<h1>Game #{{ game.id }}</h1>
 	
 	<div>
-		<span id="gameTimer">6:00</span>
+		<span id="gameTimer">{{ game_length }}:00</span>
 		<button id="start" onclick="startGame()">Start Game</button>
 		<button id="pause" onclick="pauseGame()" style="display:none">Pause Game</button>
 		<button id="restart" onclick="restartGame()" style="display:none">Restart Game</button>

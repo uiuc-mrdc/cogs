@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib import messages
+from . import custom_config as cfg
 
 from .models import ScoringType, Team, Game, GameParticipant, Phone
 
@@ -32,6 +33,7 @@ def gameX(request, game_id): #game_id comes from the url
         'standard_buttons_list':standard_buttons_list,
         'dragon_list':dragon_list,
         'treasurebox_list':treasurebox_list,
+        'game_length':cfg.game_length,
         }
     return render(request, 'team_management/GameX.html', context)
     
@@ -47,6 +49,7 @@ def scoreboard(request, game_id):
         'game':game,
         'game_started':game_started,
         'participant_list':participant_list,
+        'game_length':cfg.game_length,
     }
     return render(request, 'team_management/scoreboard.html', context)
 
@@ -63,7 +66,7 @@ def games(request):
     upcoming_games_list = []
     for game in upcoming_games:
         teams = list(game.gameparticipant_set.all().order_by('color').select_related('team'))
-        for i in range(4): # fills in missing teams with a simple dictionary
+        for i in range(cfg.teams_per_game): # fills in missing teams with a simple dictionary
             try:
                 if int(teams[i].color) != i+1:
                     teams.insert(i, {'game_id':game.id, 'color':0})
@@ -72,7 +75,7 @@ def games(request):
         upcoming_games_list.append(teams)
     
     empty_game = []
-    for i in range(4):
+    for i in range(cfg.teams_per_game):
         empty_game.append({})
     
     teams_list = Team.objects.all()
@@ -88,6 +91,8 @@ def games(request):
         "teams_list":teams_list,
         "finished_games_list":finished_games_list,
         "empty_game":empty_game,
+        "game_length":cfg.game_length,
+        "time_between_matches":cfg.time_between_matches,
     }
     return render(request, 'team_management/GameQueue.html', context)
 
