@@ -77,7 +77,7 @@ def games(request):
     
     teams_list = Team.objects.all()
     
-    finished_games = Game.objects.filter(finished=True).order_by('end_time')
+    finished_games = Game.objects.filter(finished=True).order_by('-end_time')
     finished_games_list =[]
     for obj in finished_games:
         finished_games_list.append(obj.gameparticipant_set.all().select_related('team'))

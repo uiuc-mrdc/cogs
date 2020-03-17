@@ -5,10 +5,11 @@
 
 .teamName {
 	width:90%;
-	margin: .25em 0 .25em 0;
+	margin: .25em auto .25em auto;
 	border-radius: .5em;
 	padding: .5em;
 	border: .25em solid black;
+	
 }
 
 .game {
@@ -17,6 +18,10 @@
 
 .title {
 	text-align: center;
+}
+
+#betweenTimerDiv{
+	text-align:center;
 }
 
 #emptyGame{
