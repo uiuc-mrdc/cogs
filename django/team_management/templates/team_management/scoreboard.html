@@ -1,6 +1,7 @@
 <html>
 	<head>
 		{% load static %}
+		<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
 	    <link rel="stylesheet" href="{% static 'team_management/scoreboard.css' %}">
 		
 	</head>
@@ -15,7 +16,7 @@
 		</div>
 		<div class="column" style="position:relative; height:{% widthratio participant_list|length 1 13 %}vh">
 		{% for participant in participant_list|dictsortreversed:"score" %}
-			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh; background-color: {{ participant.color }}">
+			<div class="team color{{ participant.color }}" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh">
 				<span class="teamName">{{ participant.team.team_name }}</span>
 				<span class="score" id="score{{ participant.id }}">{{ participant.score }}</span>
 			</div>
