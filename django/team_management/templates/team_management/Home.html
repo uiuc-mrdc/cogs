@@ -1,0 +1,19 @@
+{% extends "team_management/NavBar.html" %}
+
+{% block css %}
+	{% load static %}
+	{{ block.super }}
+	
+{% endblock %}
+
+{% block body %}
+
+<h1>Welcome to the MRDC Game Server</h1>
+
+{% endblock %}
+
+<script> #useless tag, since outside of a block, but it fixes text highlighting
+{% block script %}
+
+{% endblock %}
+</script>
