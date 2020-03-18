@@ -53,7 +53,7 @@ def scoreboard(request, game_id):
     }
     return render(request, 'team_management/scoreboard.html', context)
 
-def games(request):
+def gameQueue(request):
     try:
         current_game = Game.objects.get(finished=False, start_time__lt=timezone.now()).gameparticipant_set.all().select_related('team').select_related('game')
     except ObjectDoesNotExist:

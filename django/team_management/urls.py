@@ -20,7 +20,7 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('games/', views.games, name='games'),
+    path('GameQueue/', views.game_queue, name='game_queue'),
     path('games/<int:game_id>/', views.gameX, name='gameX'),
     path('scoreboard/<int:game_id>/', views.scoreboard, name='scoreboard'),
     path('add_phone/', views.addPhone, name='add_phone'),
