@@ -3,12 +3,33 @@
 {% block css %}
 	{% load static %}
 	{{ block.super }}
-	
+		    <link rel="stylesheet" href="{% static 'team_management/home.css' %}">
 {% endblock %}
 
 {% block body %}
 
-<h1>Welcome to the MRDC Game Server</h1>
+<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
+<div class="mainText">
+	<h1>Welcome to the MRDC Game Server</h1>
+	
+	{% if perms.team_management.is_team %}
+		<p>
+			Go to the <a href="{% url 'game_queue' %}">Game Queue</a> to enter a match
+		</p>
+	{% endif %}
+	
+	{% if user.is_authenticated %}
+		<a href="{% url 'add_phone' %}">Add a phone number for text notifications</a>
+	{% endif %}
+	
+	<br>
+	<br>
+	<br>
+	<br>
+	<p>
+		insert sponsor logos
+	</p>
+</div>
 
 {% endblock %}
 
