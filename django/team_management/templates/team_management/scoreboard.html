@@ -37,6 +37,7 @@ var betweenIntervalKey = null;
 	startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
 {% endif %}
 
+var minutes = 6;
 function startTimer(str_end_time){
 	var end_time = new Date(str_end_time).getTime();
 	var timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
@@ -46,7 +47,7 @@ function startTimer(str_end_time){
 			now = new Date().getTime();
 			
 			time_remaining = end_time-now;
-			minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+			minutes = Math.max(0, Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60)));
 			seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
 			
 			text = minutes + ":"
@@ -71,6 +72,7 @@ function startTimer(str_end_time){
 function startBetweenTimer(str_end_time){
 	var end_time = new Date(str_end_time).getTime(); //stored as miliseconds
 	var timer_elem = document.getElementById('betweenTimer') //saves elem before the loop (more efficient)
+	var minutes;
 	if (betweenIntervalKey == null){
 		betweenIntervalKey = setInterval(function(){
 			now = new Date().getTime(); //miliseconds
@@ -83,7 +85,7 @@ function startBetweenTimer(str_end_time){
 				text += "-";
 				timer_elem.style.color = 'red';
 			}
-			text += minutes + ":"
+			text += betweenMinutes + ":"
 			if (seconds < 10 && seconds > -10){
 				text += 0;
 			}
@@ -93,17 +95,23 @@ function startBetweenTimer(str_end_time){
 	}
 }
 
-teams = [
+var participants = [ //Generate javascript list of dictionaries for the participants
 	{% for participant in participant_list|dictsortreversed:"score" %}
 		{'id':"team{{ participant.id }}", 'score':{{ participant.score }}},
 	{% endfor %}
 ]
 
-function repositionTeams() {
-	teams.sort(function(a, b){return b.score - a.score})
+function repositionParticipants() {
+	participants.sort(function(a, b){return b.score - a.score})
 	
-	for(var i=0; i< teams.length; i++){
-		document.getElementById(teams[i]['id']).style.top = (i * 13) + "vh"
+	for(var i=0; i< participants.length; i++){
+		var elem = document.getElementById(participants[i]['id']);
+		elem.style.top = (i * 13) + "vh"
+		if (i < 2){
+			elem.style.opacity = "1";
+		} else {
+			elem.style.opacity = (minutes + 4) / (6+4);
+		}
 	}
 }
 
@@ -118,12 +126,12 @@ var webSocket = new WebSocket(
 		switch(data['type']) {
 			case 'clientUpdateScore':
 				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
-				for (var i=0; i<teams.length; i++){
-					if (teams[i]['id'] == "team" + data['participant_id']){
-						teams[i]['score'] = data['score'];
+				for (var i=0; i<participants.length; i++){
+					if (participants[i]['id'] == "team" + data['participant_id']){
+						participants[i]['score'] = data['score'];
 					}
 				}
-				repositionTeams();
+				repositionParticipants();
 				break;
 			case 'clientStartGame':
 				startTimer(data['end_time']);
