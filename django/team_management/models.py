@@ -10,6 +10,8 @@ class Team(models.Model):
     school_name = models.CharField(max_length=500)
     abbr = models.CharField(max_length=8, default="")
     capt_name = models.CharField(max_length=25)
+    weigh_in = models.BooleanField(default=False)
+    safety_check = models.BooleanField(default=False)
     #logo?
     def __str__(self):
         return self.team_name

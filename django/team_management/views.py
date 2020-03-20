@@ -96,23 +96,69 @@ def gameQueue(request):
     }
     return render(request, 'team_management/GameQueue.html', context)
 
+def postWeighIn(request):
+    try:
+        team = Team.objects.get(pk=request.POST['team_id'])
+    except: #If no valid team, send back with an error
+        teams_list = Team.objects.all()
+        context = {
+            'teams_list':teams_list,
+            'error_message': "Please select a team"
+            }
+        return render(request, 'team_management/WeighIn.html', context)
+    else: #check and update both weight and safety if the team was valid
+        try:
+            if request.POST['weight'] == 'on': 
+                weight = True            
+        except: 
+            weight = False
+        finally:
+            try:
+                if request.POST['safety'] == 'on':
+                    safety = True
+            except:
+                safety = False
+            finally:
+                team.weigh_in = weight
+                team.safety_check = safety
+                team.save()
+                return HttpResponseRedirect(reverse('weigh_in'))
+
+def postResetWeighIn(request):
+    teams = Team.objects.all()
+    
+    for team in teams:
+        team.weigh_in = False
+        team.safety_check = False
+    
+    Team.objects.bulk_update(teams, ['weigh_in', 'safety_check'])
+    return HttpResponseRedirect(reverse('home'))
+
+
+@permission_required('team_management.is_judge')
+def weighIn(request):
+    teams_list = Team.objects.all()
+    context={'teams_list':teams_list}
+    return render(request, 'team_management/WeighIn.html', context)
+
 def postPhone(request):
     try:
         team = Team.objects.get(pk=request.POST['team_id'])
     except:
         teams_list = Team.objects.all()
-        context = {'teams_list':teams_list,
+        context = {
+            'teams_list':teams_list,
             'error_message': "Please select a team"
             }
         return render(request, 'team_management/addPhone.html', context)
     else:
-        if request.POST['num'] != "8005551234": #does not save the defualt number
+        if request.POST['num'] != "8005551234": #does not save if it is the defualt number
             phone = Phone(
                 number = request.POST['num'],
                 team = team,
                 )
             phone.save()
-        return HttpResponseRedirect(reverse('home')) #returns to home screen even if default number submitted
+        return HttpResponseRedirect(reverse('home'))
 
 @login_required
 def addPhone(request):

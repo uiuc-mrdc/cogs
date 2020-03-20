@@ -25,4 +25,7 @@ urlpatterns = [
     path('scoreboard/<int:game_id>/', views.scoreboard, name='scoreboard'),
     path('add_phone/', views.addPhone, name='add_phone'),
     path('post_phone/', views.postPhone, name='post_phone'),
+    path('WeighIn/', views.weighIn, name='weigh_in'),
+    path('post_weigh_in/', views.postWeighIn, name='post_weigh_in'),
+    path('post_reset_weigh_in/', views.postResetWeighIn, name='post_reset_weigh_in'),
 ]

@@ -48,6 +48,11 @@
 						<li class="nav-item">
                           <a class="nav-link" href="{% url 'add_phone' %}">Add Phone</a>
                         </li>
+						{% if perms.team_management.is_judge %}
+						<li class="nav-item">
+                          <a class="nav-link" href="{% url 'weigh_in' %}">Weigh In</a>
+                        </li>
+						{% endif %}
 						{% if user.is_authenticated %}
 							<span class="navbar-text">User: {{ user.get_username }}</span>
 							<li class="nav-item">
