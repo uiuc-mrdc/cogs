@@ -98,9 +98,7 @@ def gameQueue(request):
 
 def postPhone(request):
     try:
-        print(request.POST)
         team = Team.objects.get(pk=request.POST['team_id'])
-        print('no error')
     except:
         teams_list = Team.objects.all()
         context = {'teams_list':teams_list,
@@ -108,17 +106,16 @@ def postPhone(request):
             }
         return render(request, 'team_management/addPhone.html', context)
     else:
-    
-        phone = Phone(
-            number = request.POST['num'],
-            team = team,
-            )
-        phone.save()
-        return HttpResponseRedirect(reverse('index'))
+        if request.POST['num'] != "8005551234": #does not save the defualt number
+            phone = Phone(
+                number = request.POST['num'],
+                team = team,
+                )
+            phone.save()
+        return HttpResponseRedirect(reverse('home')) #returns to home screen even if default number submitted
 
 @login_required
 def addPhone(request):
     teams_list = Team.objects.all()
-    print(teams_list)
     context={'teams_list':teams_list}
     return render(request, 'team_management/addPhone.html', context)

@@ -2,19 +2,35 @@
 
 
 {% block body %}
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-<form action="{% url 'post_phone' %}" method="post">
-{% csrf_token %}
+<div style="text-align:center; margin: 5em 0 0 0">
+	{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+	
+	<form action="{% url 'post_phone' %}" method="post" style="display:inline-block; text-align:left">
+	{% csrf_token %}
+	<p>
+		<h5>Phone Number:</h5>
+		<input type="text" value="8005551234" name="num">
+		<span style="font-size:90%">format: ########## (10 numbers)</span>
 
-<input type="text" value="Phone Number" name="num">
-
-<select name="team_id">
-	<option value="0"></option>
-	{% for team in teams_list %}
-	<option value="{{ team.id }}">{{ team.team_name }}</option>
-	{% endfor %}
-
-<input type="submit" value="Add Phone">
-</form>
+	</p>
+	<p>
+		<h5>Team:</h5>
+		<select name="team_id" style="width:15em">
+			<option value="0"></option>
+			{% for team in teams_list %}
+				<option value="{{ team.id }}">{{ team.team_name }}</option>
+			{% endfor %}
+		</select>
+	</p>
+	<input type="submit" value="Submit Number">
+	</form>
+	<p style="font-size:90%">
+		<br>
+		Phone Numbers under a team name will be sent a message roughly 25 minutes before each of their matches.
+		<br>
+		Phone Numbers under Audience will be sent a 15 minute reminder for Saturday's Finals, as well as the Demolition Round (2 texts total).
+	</p>
+	
+</div>
 {% endblock %}
