@@ -1,4 +1,4 @@
-body {
+.content {
 	font-size: 200%;
 }
 
@@ -100,6 +100,10 @@ th, td {
 .column {
 	float: left;
 	text-align:center;
+}
+
+.scoreboard {
+	overflow:auto;
 }
 
 .teamName {
