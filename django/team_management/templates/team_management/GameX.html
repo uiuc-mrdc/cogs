@@ -126,10 +126,14 @@ var game_active = false;
 	}
 {% endif %}
 function startGame(){
-	webSocket.send(JSON.stringify({
-		'type':'startGame',
-		'game_id':{{ game.id }},
-	}));
+	if ('{{ other_active_game }}' == 'False') {
+		webSocket.send(JSON.stringify({
+			'type':'startGame',
+			'game_id':{{ game.id }},
+		}));
+	} else {
+		alert('Anther game is currently active. Please finalize it before starting this game.\n\nThen refresh the page')
+	}
 }
 function pauseGame(){
 	webSocket.send(JSON.stringify({

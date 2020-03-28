@@ -26,6 +26,13 @@ def gameX(request, game_id): #game_id comes from the url
     game = Game.objects.get(pk=game_id)
     
     game_started = (game.start_time < timezone.now())
+    
+    try:
+        Game.objects.get(finished=False, start_time__lt=timezone.now())
+        other_active_game = True
+    except ObjectDoesNotExist:
+        other_active_game = False
+
     context = {
         'game':game, 
         'game_started':game_started,
@@ -34,6 +41,7 @@ def gameX(request, game_id): #game_id comes from the url
         'dragon_list':dragon_list,
         'treasurebox_list':treasurebox_list,
         'game_length':cfg.game_length,
+        'other_active_game':other_active_game,
         }
     return render(request, 'team_management/GameX.html', context)
     
