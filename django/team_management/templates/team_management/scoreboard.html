@@ -48,7 +48,7 @@ var betweenIntervalKey = null;
 	}
 {% endif %}
 
-var minutes_rem = 6;
+var minutes_rem = {{ game_length }};
 function startTimer(str_end_time){
 	var end_time = new Date(str_end_time).getTime();
 	var timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
@@ -80,7 +80,7 @@ function startBetweenTimer(str_end_time){
 	if (betweenIntervalKey == null){
 		betweenIntervalKey = setInterval(function(){
 			now = new Date().getTime(); //miliseconds
-			time_remaining = (end_time + 5*60*1000) - now;
+			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
 			displayTime(time_remaining, timer_elem);
 		}, 1000);
 	}
@@ -119,7 +119,7 @@ function repositionParticipants() {
 		if (i < 2){
 			elem.style.opacity = "1";
 		} else {
-			elem.style.opacity = (minutes_rem + 4) / (6+4);
+			elem.style.opacity = (minutes_rem + 4) / ({{ game_length }}+4); // max of 10/10 and min of 4/10   (with game_length=6)
 		}
 	}
 }

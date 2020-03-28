@@ -50,6 +50,7 @@ def scoreboard(request, game_id):
         'game_started':game_started,
         'participant_list':participant_list,
         'game_length':cfg.game_length,
+        'time_between_matches':cfg.time_between_matches,
     }
     return render(request, 'team_management/scoreboard.html', context)
 
