@@ -133,6 +133,7 @@
 
 <script>
 {% block script %}
+
 {% if messages %}
 	{% for message in messages %}
 		alert("{{ message }}")
@@ -208,13 +209,24 @@ function displayTime(time_remaining, timer_elem) {
 	timer_elem.innerHTML = text;
 }
 
+weighin_safety_completed = { //makes simple dictionary in javascript or checking weigh ins and safety checks
+	// Format:   { team_id : [true/false, team_name]}
+	{% for team in teams_list %}
+		"{{ team.id }}": [{% if team.weigh_in and team.safety_check %}true{% else %}false{% endif %}, "{{ team.team_name }}"] ,
+	{% endfor %}
+}
+
 function newParticipant(select_elem, color_id){
-	webSocket.send(JSON.stringify({
-		'type':'newParticipant',
-		'team_id':select_elem.value,
-		'game_id':select_elem.getAttribute('data-game_id'),
-		'color':color_id,
-	}));
+	if (weighin_safety_completed[select_elem.value][0]){
+		webSocket.send(JSON.stringify({
+			'type':'newParticipant',
+			'team_id':select_elem.value,
+			'game_id':select_elem.getAttribute('data-game_id'),
+			'color':color_id,
+		}));
+	} else {
+		alert("Please complete the weigh in and safety check for " + weighin_safety_completed[select_elem.value][1] + " before queueing them for a game.\n\nThen refresh your browser.")
+	}
 }
 
 function addNewGame(){
