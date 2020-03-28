@@ -109,7 +109,7 @@ var intervalKey = null;
 var game_active = false;
 {% if game_started %}
 	pause_time={{ game.pause_time.seconds }};
-	if ("{{ game.finished }}" == "True") {
+	if ({{ game.finished|lower }}) {
 		game_active = false;
 		document.getElementById('start').style.display = 'none'; //Others default to 'none'
 		document.getElementById('gameTimer').innerHTML = "Game Finalized";

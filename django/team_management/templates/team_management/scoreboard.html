@@ -35,10 +35,20 @@ var intervalKey = null;
 var betweenIntervalKey = null;
 
 {% if game_started %}
-	startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+	pause_time={{ game.pause_time.seconds }};
+	if ({{ game.finished|lower }}) {
+		document.getElementById('gameTimer').innerHTML = "Scores Finalized";
+		startBetweenTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+	} else {
+		if (pause_time == 0) {
+			startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+		} else {
+			displayTime(pause_time*1000, document.getElementById('gameTimer'));
+		}
+	}
 {% endif %}
 
-var minutes = 6;
+var minutes_rem = 6;
 function startTimer(str_end_time){
 	var end_time = new Date(str_end_time).getTime();
 	var timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
@@ -48,22 +58,15 @@ function startTimer(str_end_time){
 			now = new Date().getTime();
 			
 			time_remaining = end_time-now;
-			minutes = Math.max(0, Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60)));
-			seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
-			
-			text = minutes + ":"
-			if (seconds < 10){
-				text += 0;
-			}
-			text += seconds;
-			timer_elem.innerHTML = text;
+			minutes_rem = displayTime(time_remaining, timer_elem);
 			
 			if (time_remaining <=0){
+				minutes_rem = 0;
 				timer_elem.style.fontSize = '12vh';
+				timer_elem.style.color = 'black';
 				timer_elem.innerHTML = 'Time Over<br>Finalizing Score';
 				clearInterval(intervalKey);
 				intervalKey = null;
-				document.getElementById('betweenTimerDiv').style.display = '';
 				startBetweenTimer(str_end_time);
 			}
 		}, 1000);
@@ -71,29 +74,34 @@ function startTimer(str_end_time){
 }
 
 function startBetweenTimer(str_end_time){
+	document.getElementById('betweenTimerDiv').style.display = '';
 	var end_time = new Date(str_end_time).getTime(); //stored as miliseconds
 	var timer_elem = document.getElementById('betweenTimer') //saves elem before the loop (more efficient)
-	var minutes;
 	if (betweenIntervalKey == null){
 		betweenIntervalKey = setInterval(function(){
 			now = new Date().getTime(); //miliseconds
 			time_remaining = (end_time + 5*60*1000) - now;
-			minutes = Math.floor((Math.abs(time_remaining) % (1000 * 60 * 60)) / (1000 * 60));
-			seconds = Math.floor((Math.abs(time_remaining) % (1000 * 60)) / 1000);
-			
-			text = '';
-			if (time_remaining < 0){
-				text += "-";
-				timer_elem.style.color = 'red';
-			}
-			text += minutes + ":"
-			if (seconds < 10 && seconds > -10){
-				text += 0;
-			}
-			text += seconds;
-			timer_elem.innerHTML = text;
+			displayTime(time_remaining, timer_elem);
 		}, 1000);
 	}
+}
+
+function displayTime(time_remaining, timer_elem){
+	minutes = Math.floor((Math.abs(time_remaining) % (1000 * 60 * 60)) / (1000 * 60));
+	seconds = Math.floor((Math.abs(time_remaining) % (1000 * 60)) / 1000);
+	
+	text = '';
+	if (time_remaining < 0){
+		text += "-";
+		timer_elem.style.color = 'red';
+	}
+	text += minutes + ":"
+	if (seconds < 10 && seconds > -10){
+		text += 0;
+	}
+	text += seconds;
+	timer_elem.innerHTML = text;
+	return minutes;
 }
 
 var participants = [ //Generate javascript list of dictionaries for the participants
@@ -111,7 +119,7 @@ function repositionParticipants() {
 		if (i < 2){
 			elem.style.opacity = "1";
 		} else {
-			elem.style.opacity = (minutes + 4) / (6+4);
+			elem.style.opacity = (minutes_rem + 4) / (6+4);
 		}
 	}
 }
@@ -136,7 +144,6 @@ var webSocket = new WebSocket(
 				break;
 			case 'clientStartGame':
 				startTimer(data['end_time']);
-				game_active = true;
 				break;
 			case 'clientPauseGame':
 				time_remaining = data['time_remaining'];
@@ -144,7 +151,6 @@ var webSocket = new WebSocket(
 				intervalKey = null;
 				break;
 			case 'clientFinalizeGame':
-				game_active = false;
 				document.getElementById('gameTimer').innerHTML = "Scores Finalized";
 				break;
 		}
