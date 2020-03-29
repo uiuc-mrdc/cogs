@@ -14,7 +14,6 @@
             <!--Custom Styles-->
 			{% load static %}
 			{% block css %}
-            <link rel="stylesheet" href="{% static 'styles.css' %}">
             <link rel="icon" href="{% static 'icons/serve.ico' %}">
 			{% endblock %}
             <!--/Custom-->
@@ -32,18 +31,12 @@
                       <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                      <ul class="navbar-nav">
+                      <ul class="navbar-nav w-100 justify-content-left">
                         <li class="nav-item">
                           <a class="nav-link" href="{% url 'home' %}">Home </a>
                         </li>
-                        <li class="nav-item active">
-                          <a class="nav-link" href="#">Team Management<span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link" href="#">Pricing</a>
-                        </li>
 						<li class="nav-item">
-                          <a class="nav-link" href="{% url 'game_queue' %}">Games</a>
+                          <a class="nav-link" href="{% url 'game_queue' %}">Game Queue</a>
                         </li>
 						<li class="nav-item">
                           <a class="nav-link" href="{% url 'add_phone' %}">Add Phone</a>
@@ -53,6 +46,8 @@
                           <a class="nav-link" href="{% url 'weigh_in' %}">Weigh In</a>
                         </li>
 						{% endif %}
+					  </ul>
+					  <ul class="navbar-nav justify-content-end w-100" >
 						{% if user.is_authenticated %}
 							<span class="navbar-text">User: {{ user.get_username }}</span>
 							<li class="nav-item">
