@@ -33,17 +33,21 @@
                     <div class="collapse navbar-collapse" id="navbarNav">
                       <ul class="navbar-nav w-100 justify-content-left">
                         <li class="nav-item">
-                          <a class="nav-link" href="{% url 'home' %}">Home </a>
+							{% url 'home' as home_url %}
+                          <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
 						<li class="nav-item">
-                          <a class="nav-link" href="{% url 'game_queue' %}">Game Queue</a>
+							{% url 'game_queue' as game_queue_url %}
+                          <a class="nav-link {% if request.path == game_queue_url %}active{% endif %}" href="{{ game_queue_url }}">Game Queue</a>
                         </li>
 						<li class="nav-item">
-                          <a class="nav-link" href="{% url 'add_phone' %}">Add Phone</a>
+							{% url 'add_phone' as add_phone_url %}
+                          <a class="nav-link {% if request.path == add_phone_url %}active{% endif %}" href="{{ add_phone_url }}">Add Phone</a>
                         </li>
 						{% if perms.team_management.is_judge %}
 						<li class="nav-item">
-                          <a class="nav-link" href="{% url 'weigh_in' %}">Weigh In</a>
+							{% url 'weigh_in' as weigh_in_url %}
+                          <a class="nav-link {% if request.path == weigh_in_url %}active{% endif %}" href="{{ weigh_in_url }}">Weigh In</a>
                         </li>
 						{% endif %}
 					  </ul>
