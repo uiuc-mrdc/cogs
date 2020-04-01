@@ -171,6 +171,6 @@ def postPhone(request):
 
 @login_required
 def addPhone(request):
-    teams_list = Team.objects.all()
+    teams_list = Team.objects.all().order_by('team_name')
     context={'teams_list':teams_list}
     return render(request, 'team_management/addPhone.html', context)
