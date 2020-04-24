@@ -52,6 +52,22 @@
 	{% endfor %}
 	</div>
 	
+	<div>
+		Potion Recipes:
+		<table id="PotionTable">
+			<tr>
+				<th>Healing</th>
+				<th>Strength</th>
+				<th>Invisibility</th>
+			</tr>
+			<tr>
+				<td><span class="potioncircle" style="background-color:blue"></span><span class="potioncircle" style="background-color:purple"></span><span class="potioncircle" style="background-color:red"></span><span class="potioncircle" style="background-color:blue"></span></td>
+				<td><span class="potioncircle" style="background-color:green"></span><span class="potioncircle" style="background-color:yellow"></span><span class="potioncircle" style="background-color:red"></span><span class="potioncircle" style="background-color:green"></span></td>
+				<td><span class="potioncircle" style="background-color:blue"></span><span class="potioncircle" style="background-color:purple"></span><span class="potioncircle" style="background-color:red"></span><span class="potioncircle" style="background-color:green"></span></td>
+			</tr>
+		</table>
+	</div>
+	
 	<div class="counters">
 		Treasure Box Balls:
 		<p>
@@ -329,7 +345,7 @@ var webSocket = new WebSocket(
 	
     webSocket.onclose = function(e) {
         console.error('Websocket closed unexpectedly');
-		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
+		alert('WebSocket connection closed. Please refresh')  //Comment this out during development
     };
 
 function drawDeleteButtonRow(scoring_type_id, action_id, scoring_type_name, multiplier, time){
