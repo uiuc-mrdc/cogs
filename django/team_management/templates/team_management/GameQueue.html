@@ -236,8 +236,10 @@ function addNewGame(){
 }
 
 //sets up websocket and handles incoming data
+var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 var webSocket = new WebSocket(
-        'ws://' + window.location.host +
+		ws_scheme+
+        '://' + window.location.host +
         '/ws/gameQueue');
 
 webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
