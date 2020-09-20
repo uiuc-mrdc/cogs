@@ -53,10 +53,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'composeexample.urls'
 
+LOGIN_REDIRECT_URL = '/'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'composeexample/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -143,3 +145,10 @@ os.path.join(BASE_DIR, "static"),
 ("custom_css", os.path.join('static/css')),
 
 )
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER= 'MRDCGameServer@gmail.com'
+EMAIL_HOST_PASSWORD = "apricots" #For Gmail, you must enable "Allow less secure apps"
+EMAIL_USE_TLS = True

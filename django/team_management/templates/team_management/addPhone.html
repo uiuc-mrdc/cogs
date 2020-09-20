@@ -1,0 +1,20 @@
+{% extends "team_management/index.html" %}
+
+
+{% block body %}
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'post_phone' %}" method="post">
+{% csrf_token %}
+
+<input type="text" value="Phone Number" name="num">
+
+<select name="team_id">
+	<option value="0"></option>
+	{% for team in teams_list %}
+	<option value="{{ team.id }}">{{ team.team_name }}</option>
+	{% endfor %}
+
+<input type="submit" value="Add Phone">
+</form>
+{% endblock %}
