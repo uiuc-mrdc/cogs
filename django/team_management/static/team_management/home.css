@@ -1,0 +1,10 @@
+.mainText {
+	text-align:center;
+}
+
+.logo {
+	height:auto;
+	max-width:90vw;
+	display:block;
+	margin: 2vh auto 5vh auto;
+}

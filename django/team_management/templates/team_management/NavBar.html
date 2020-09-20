@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	
+            <title>MRDC Game Server</title>
+
+            <!-- Bootstrap Requirements -->
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+            <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+            <!-- /Bootstrap Requirements -->
+
+            <!--Custom Styles-->
+			{% load static %}
+			{% block css %}
+            <link rel="icon" href="{% static 'icons/serve.ico' %}">
+			{% endblock %}
+            <!--/Custom-->
+
+    </head>
+
+    <body>
+			{% block navbar %}
+            <nav class="navbar navbar-dark navbar-expand-lg navbar-light bg-dark justify-content-between">
+                    <a class="navbar-brand" href="/"><img style="height: 45px; width: 45px; margin-right: 5px" src="{% static '/icons/serve.ico' %}"></img>MRDC Game Serve</a>
+
+                    <!-- <a class="navbar-brand" href="#">MRDC Game Serve</a> -->
+                    
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                      <ul class="navbar-nav w-100 justify-content-left">
+                        <li class="nav-item">
+							{% url 'home' as home_url %}
+                          <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
+                        </li>
+						<li class="nav-item">
+							{% url 'game_queue' as game_queue_url %}
+                          <a class="nav-link {% if request.path == game_queue_url %}active{% endif %}" href="{{ game_queue_url }}">Game Queue</a>
+                        </li>
+						<li class="nav-item">
+							{% url 'add_phone' as add_phone_url %}
+                          <a class="nav-link {% if request.path == add_phone_url %}active{% endif %}" href="{{ add_phone_url }}">Add Phone</a>
+                        </li>
+						{% if perms.team_management.is_judge %}
+						<li class="nav-item">
+							{% url 'weigh_in' as weigh_in_url %}
+                          <a class="nav-link {% if request.path == weigh_in_url %}active{% endif %}" href="{{ weigh_in_url }}">Weigh In</a>
+                        </li>
+						{% endif %}
+					  </ul>
+					  <ul class="navbar-nav justify-content-end w-100" >
+						{% if user.is_authenticated %}
+							<span class="navbar-text">User: {{ user.get_username }}</span>
+							<li class="nav-item">
+							<a class="nav-link" href="{% url 'logout'%}?next={{request.path}}">Logout</a>   
+						{% else %}
+							<li class="nav-item">
+							<a class="nav-link" href="{% url 'login'%}?next={{request.path}}">Login</a>  
+						{% endif %}
+						</li>
+                      </ul>
+                    </div>
+            </nav>
+			{% endblock %}
+			
+			{% block body %}
+			{% endblock %}
+    </body>
+	<script>
+	{% block script %}
+	{% endblock %}
+	</script>
+</html>

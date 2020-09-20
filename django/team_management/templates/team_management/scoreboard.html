@@ -1,0 +1,168 @@
+<html>
+	<head>
+		{% load static %}
+		<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
+	    <link rel="stylesheet" href="{% static 'team_management/scoreboard.css' %}">
+		
+	</head>
+	<body>
+		<a href="/" style="opacity:0; position:fixed; width:10vw; height:10vh">Home Page</a>
+		{% if game.id > 1 %}<a href="{% url 'scoreboard' game_id=game.id|add:"-1" %}" style="opacity:0; position:fixed; bottom:0; width:10vw; height:10vh">Prev</a>{% endif %}
+		<a href="{% url 'scoreboard' game_id=game.id|add:"1" %}" style="opacity:0; position:fixed; bottom:0; right:0; width:10vw; height:10vh">Next</a>
+		
+		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
+		<div class="column" style="width:30%">
+			<h3 id="betweenTimerDiv" style="display:none">Estimated time to next game: <span id="betweenTimer">Loading...</span></h3>
+			<span class="timer" id="gameTimer">6:00</span>
+		</div>
+		<div class="column" style="position:relative; width:70%; height:{% widthratio participant_list|length 1 13 %}vh">
+		{% for participant in participant_list|dictsortreversed:"score" %}
+			<div class="team color{{ participant.color }}" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh">
+			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh; background-color: {{ participant.color }}">
+				<span class="teamName">{% if participant.team.team_name|length < 25 %}{{ participant.team.team_name }}{% else %}{{ participant.team.abbr }}{% endif %}</span>
+				<span class="score" id="score{{ participant.id }}">{{ participant.score }}</span>
+			</div>
+		{% empty %} {# displays if participant_list is empty #}
+			<h1>No Teams for Game #{{ game.id }}</h1>
+		{% endfor %}
+		</div>
+	</div>
+		
+	</body>
+	<script>
+	
+var time_remaining;
+var intervalKey = null;
+var betweenIntervalKey = null;
+
+{% if game_started %}
+	pause_time={{ game.pause_time.seconds }};
+	if ({{ game.finished|lower }}) {
+		document.getElementById('gameTimer').innerHTML = "Scores Finalized";
+		startBetweenTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+	} else {
+		if (pause_time == 0) {
+			startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+		} else {
+			displayTime(pause_time*1000, document.getElementById('gameTimer'));
+		}
+	}
+{% endif %}
+
+var minutes_rem = {{ game_length }};
+function startTimer(str_end_time){
+	var end_time = new Date(str_end_time).getTime();
+	var timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
+	timer_elem.style.color = 'black'
+	if (intervalKey == null){
+		intervalKey = setInterval(function(){
+			now = new Date().getTime();
+			
+			time_remaining = end_time-now;
+			minutes_rem = displayTime(time_remaining, timer_elem);
+			
+			if (time_remaining <=0){
+				minutes_rem = 0;
+				timer_elem.style.fontSize = '12vh';
+				timer_elem.style.color = 'black';
+				timer_elem.innerHTML = 'Time Over<br>Finalizing Score';
+				clearInterval(intervalKey);
+				intervalKey = null;
+				startBetweenTimer(str_end_time);
+			}
+		}, 1000);
+	}
+}
+
+function startBetweenTimer(str_end_time){
+	document.getElementById('betweenTimerDiv').style.display = '';
+	var end_time = new Date(str_end_time).getTime(); //stored as miliseconds
+	var timer_elem = document.getElementById('betweenTimer') //saves elem before the loop (more efficient)
+	if (betweenIntervalKey == null){
+		betweenIntervalKey = setInterval(function(){
+			now = new Date().getTime(); //miliseconds
+			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
+			displayTime(time_remaining, timer_elem);
+		}, 1000);
+	}
+}
+
+function displayTime(time_remaining, timer_elem){
+	minutes = Math.floor((Math.abs(time_remaining) % (1000 * 60 * 60)) / (1000 * 60));
+	seconds = Math.floor((Math.abs(time_remaining) % (1000 * 60)) / 1000);
+	
+	text = '';
+	if (time_remaining < 0){
+		text += "-";
+		timer_elem.style.color = 'red';
+	}
+	text += minutes + ":"
+	if (seconds < 10 && seconds > -10){
+		text += 0;
+	}
+	text += seconds;
+	timer_elem.innerHTML = text;
+	return minutes;
+}
+
+var participants = [ //Generate javascript list of dictionaries for the participants
+	{% for participant in participant_list|dictsortreversed:"score" %}
+		{'id':"team{{ participant.id }}", 'score':{{ participant.score }}},
+	{% endfor %}
+]
+
+function repositionParticipants() {
+	participants.sort(function(a, b){return b.score - a.score})
+	
+	for(var i=0; i< participants.length; i++){
+		var elem = document.getElementById(participants[i]['id']);
+		elem.style.top = (i * 13) + "vh"
+		if (i < 2){
+			elem.style.opacity = "1";
+		} else {
+			elem.style.opacity = (minutes_rem + 4) / ({{ game_length }}+4); // max of 10/10 and min of 4/10   (with game_length=6)
+		}
+	}
+}
+
+//sets up websocket and handles incoming data
+var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+var webSocket = new WebSocket(
+        ws_scheme + 
+		'://' + window.location.host +
+        '/ws/game/{{ game.id }}');
+
+    webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
+        var data = JSON.parse(e.data);
+		
+		switch(data['type']) {
+			case 'clientUpdateScore':
+				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
+				for (var i=0; i<participants.length; i++){
+					if (participants[i]['id'] == "team" + data['participant_id']){
+						participants[i]['score'] = data['score'];
+					}
+				}
+				repositionParticipants();
+				break;
+			case 'clientStartGame':
+				startTimer(data['end_time']);
+				break;
+			case 'clientPauseGame':
+				time_remaining = data['time_remaining'];
+				clearInterval(intervalKey);
+				intervalKey = null;
+				break;
+			case 'clientFinalizeGame':
+				document.getElementById('gameTimer').innerHTML = "Scores Finalized";
+				break;
+		}
+    };
+	
+    webSocket.onclose = function(e) {
+        console.error('Websocket closed unexpectedly');
+		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
+    };
+	
+	</script>
+</html>

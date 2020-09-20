@@ -1,0 +1,75 @@
+{% extends "team_management/NavBar.html" %}
+
+{% block css %}
+	{% load static %}
+	{{ block.super }}
+		    <link rel="stylesheet" href="{% static 'team_management/home.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="content" style="margin: 2em 2em 1em 2em">
+	<h1>Weigh in and Safety Check</h1>
+	
+	Teams must complete both a weigh in and a safety check before competing <b>BOTH DAYS</b>
+	
+	{% if error_message %}<p style="color:red"><strong>{{ error_message }}</strong></p>{% endif %}
+	
+	<form action="{% url 'post_weigh_in' %}" method="post">
+	{% csrf_token %}
+	<p>
+		<h5>Team:</h5>
+		<select name="team_id" style="width:15em">
+			<option value="0"></option>
+			{% for team in teams_list %}
+				<option value="{{ team.id }}">{{ team.team_name }}</option>
+			{% endfor %}
+		</select>
+	</p>
+	<p>
+		<h5>Weigh In:</h5>
+		<label for="weight" style="padding-right:5px">Weight is less than 140lbs:</label><input type="checkbox" id="weight" name="weight">
+	</p>
+	<p>
+		<h5>Safety Check:</h5>
+		<ul>
+			<li>Begin driving the robot</li>
+			<li>Disconnect or power off the controller</li>
+			<li>Robot must stop safely</li>
+		</ul>
+		This is to ensure that the robots are designed to fail in a safe manner.
+		<br>
+		<label for="safety" style="padding-right:5px">Safety check passed:</label><input type="checkbox" id="safety" name="safety">
+	</p>
+	
+	<input type="submit" value="Submit">
+	</form>
+
+
+	<div id="dialogBox" style="position: fixed;top: 5vh;left: 35vw;width: 30vw;z-index: 1001;display: none;padding: .5em;background-color: white;border: .25em solid black;">
+		<h2>Are You Sure? You should only do this on Friday and Saturday before the day starts</h2>
+		<form action="{% url 'post_reset_weigh_in' %}" method="post" style="display:inline-block">
+			{% csrf_token %}
+			<input id="ResetAllSubmit" type="submit" value="Yes">
+		</form>
+		<button onclick="this.parentNode.style.display = 'none'">No</button>
+	</div>
+	<div style="text-align:right">
+		<p>Reset all data?</p>
+		<button onclick="showResetAllButton()">Reset All</button>
+	</div>
+
+</div>
+{% endblock %}
+
+<script> #useless tag, since outside of a block, but it fixes text highlighting
+{% block script %}
+
+function showResetAllButton() {
+	document.getElementById('dialogBox').style.display = '';
+}
+
+
+{% endblock %}
+</script>
+
+

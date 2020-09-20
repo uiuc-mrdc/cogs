@@ -19,7 +19,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('games/', views.games, name='games'),
+    path('', views.home, name='home'),
+    path('GameQueue/', views.gameQueue, name='game_queue'),
     path('games/<int:game_id>/', views.gameX, name='gameX'),
+    path('scoreboard/<int:game_id>/', views.scoreboard, name='scoreboard'),
+    path('add_phone/', views.addPhone, name='add_phone'),
+    path('post_phone/', views.postPhone, name='post_phone'),
+    path('WeighIn/', views.weighIn, name='weigh_in'),
+    path('post_weigh_in/', views.postWeighIn, name='post_weigh_in'),
+    path('post_reset_weigh_in/', views.postResetWeighIn, name='post_reset_weigh_in'),
 ]
