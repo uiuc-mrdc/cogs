@@ -18,6 +18,7 @@
 		<div class="column" style="position:relative; width:70%; height:{% widthratio participant_list|length 1 13 %}vh">
 		{% for participant in participant_list|dictsortreversed:"score" %}
 			<div class="team color{{ participant.color }}" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh">
+			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh; background-color: {{ participant.color }}">
 				<span class="teamName">{% if participant.team.team_name|length < 25 %}{{ participant.team.team_name }}{% else %}{{ participant.team.abbr }}{% endif %}</span>
 				<span class="score" id="score{{ participant.id }}">{{ participant.score }}</span>
 			</div>
