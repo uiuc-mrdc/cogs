@@ -30,6 +30,21 @@ def gameX(request, game_id): #game_id comes from the url
         'treasurebox_list':treasurebox_list,
         }
     return render(request, 'team_management/GameX.html', context)
+    
+def scoreboard(request, game_id):
+    participant_list = GameParticipant.objects.filter(game=game_id).select_related('team') #These two lines return equivalent querysets for Django, but the unused one hits the database twice. Also, select_related saves 4 queries, since it would have to fetch the team name every time it is requested, but select_related just joins it now
+    try:
+        game = Game.objects.get(pk=game_id)
+        game_started = (game.start_time < timezone.now())
+    except: 
+        game = {'id':game_id}
+        game_started = False
+    context = {
+        'game':game,
+        'game_started':game_started,
+        'participant_list':participant_list,
+    }
+    return render(request, 'team_management/scoreboard.html', context)
 
 def games(request):
     return render(request, 'team_management/games.html', {})
