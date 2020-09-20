@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.decorators import permission_required
-
-from .models import ScoringType, Team, Game, GameParticipant, Phone
+from django.utils import timezone
+from .models import ScoringType, Team, Game, GameParticipant
 
 def index(request):
     return render(request, "team_management/index.html", {})
