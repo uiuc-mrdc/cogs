@@ -133,7 +133,6 @@
 
 <script>
 {% block script %}
-
 {% if messages %}
 	{% for message in messages %}
 		alert("{{ message }}")
@@ -171,7 +170,6 @@ function startTimer(str_end_time){
 				timer_elem.innerHTML = 'Time Over<br>Finalizing Score';
 				clearInterval(intervalKey);
 				intervalKey = null;
-
 				startBetweenTimer(str_end_time);
 			}
 		}, 1000);
@@ -186,7 +184,6 @@ function startBetweenTimer(str_end_time){
 		betweenIntervalKey = setInterval(function(){
 			now = new Date().getTime(); //miliseconds
 			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
-			
 			displayTime(time_remaining, timer_elem);
 		}, 1000);
 	}
