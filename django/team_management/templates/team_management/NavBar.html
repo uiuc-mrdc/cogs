@@ -2,7 +2,7 @@
 <html>
     <head>
 	
-            <title>MRDC Team Management</title>
+            <title>MRDC Game Server</title>
 
             <!-- Bootstrap Requirements -->
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -14,7 +14,6 @@
             <!--Custom Styles-->
 			{% load static %}
 			{% block css %}
-            <link rel="stylesheet" href="{% static 'styles.css' %}">
             <link rel="icon" href="{% static 'icons/serve.ico' %}">
 			{% endblock %}
             <!--/Custom-->
@@ -32,22 +31,27 @@
                       <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                      <ul class="navbar-nav">
+                      <ul class="navbar-nav w-100 justify-content-left">
                         <li class="nav-item">
-                          <a class="nav-link" href="#">Home </a>
-                        </li>
-                        <li class="nav-item active">
-                          <a class="nav-link" href="#">Team Management<span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link" href="#">Pricing</a>
+							{% url 'home' as home_url %}
+                          <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
 						<li class="nav-item">
-                          <a class="nav-link" href="/games">Games</a>
+							{% url 'game_queue' as game_queue_url %}
+                          <a class="nav-link {% if request.path == game_queue_url %}active{% endif %}" href="{{ game_queue_url }}">Game Queue</a>
                         </li>
 						<li class="nav-item">
-                          <a class="nav-link" href="{% url 'add_phone' %}">Add Phone</a>
+							{% url 'add_phone' as add_phone_url %}
+                          <a class="nav-link {% if request.path == add_phone_url %}active{% endif %}" href="{{ add_phone_url }}">Add Phone</a>
                         </li>
+						{% if perms.team_management.is_judge %}
+						<li class="nav-item">
+							{% url 'weigh_in' as weigh_in_url %}
+                          <a class="nav-link {% if request.path == weigh_in_url %}active{% endif %}" href="{{ weigh_in_url }}">Weigh In</a>
+                        </li>
+						{% endif %}
+					  </ul>
+					  <ul class="navbar-nav justify-content-end w-100" >
 						{% if user.is_authenticated %}
 							<span class="navbar-text">User: {{ user.get_username }}</span>
 							<li class="nav-item">

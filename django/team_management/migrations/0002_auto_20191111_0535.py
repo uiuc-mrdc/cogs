@@ -58,7 +58,8 @@ def initializeDb(apps, schema_editor):
     judge.user_permissions.add(judge_perm)
     judge.save() #needs save for the permission
     
-    audience = User.objects.create_user('audience', 'test@test.com', 'password') #No permissions
+    audience = User.objects.create_user('Audience', 'test@test.com', 'password') #No permissions
+    Team.objects.create(user=audience,  team_name='Audience', school_name='N/A', abbr='Audience', capt_name='N/A')
     
     content_type = ContentType.objects.get_for_model(Team)
     team_perm = Permission.objects.create(

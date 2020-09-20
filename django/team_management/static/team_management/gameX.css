@@ -1,4 +1,4 @@
-body {
+.content {
 	font-size: 200%;
 }
 
@@ -102,6 +102,10 @@ th, td {
 	text-align:center;
 }
 
+.scoreboard {
+	overflow:auto;
+}
+
 .teamName {
 	width:90%;
 	margin: .25em 0 0 0;
@@ -109,6 +113,18 @@ th, td {
 	padding: .5em;
 	border: .25em dashed black;
 	opacity: .5;
+}
+
+table#PotionTable td:nth-child(even) {
+	border-left:5px solid black;
+	border-right:5px solid black;
+}
+
+.potioncircle {
+	height:3em;
+	width:3em;
+	border-radius:50%;
+	display: inline-block;
 }
 
 input[type=radio] {

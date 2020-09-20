@@ -1,4 +1,4 @@
-{% extends "team_management/index.html" %}
+{% extends "team_management/NavBar.html" %}
 
 {% block css %}
 	{% load static %}
@@ -145,7 +145,11 @@ var pause_time=0;
 {% if participant_list %}
 	{% with participant=participant_list|first %}
 		pause_time={{ participant.game.pause_time.seconds }};
-		startTimer("{{ participant.game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ participant.game.end_time|time:"H:i:s" }}");
+		if (pause_time == 0){
+			startTimer("{{ participant.game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ participant.game.end_time|time:"H:i:s" }}");
+		} else {
+			displayTime(pause_time*1000, document.getElementById('gameTimer'));
+		}
 	{% endwith %}
 {% else %}
 	startBetweenTimer("{{ finished_games_list.0.0.game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ finished_games_list.0.0.game.end_time|time:"H:i:s" }}")
@@ -158,28 +162,14 @@ function startTimer(str_end_time){
 	if (intervalKey == null){
 		intervalKey = setInterval(function(){
 			now = new Date().getTime();
-			if (pause_time > 0){
-				time_remaining = pause_time*1000;
-				clearInterval(intervalKey);
-				intervalKey = null;
-			} else {
-				time_remaining = end_time-now;
-			}
-			minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
-			seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+			time_remaining = end_time-now;
 			
-			text = minutes + ":"
-			if (seconds < 10){
-				text += 0;
-			}
-			text += seconds;
-			timer_elem.innerHTML = text;
+			displayTime(time_remaining, timer_elem);
 			
-			if (time_remaining <=0){
+			if (time_remaining <=0){ //When time runs out
 				timer_elem.innerHTML = 'Time Over<br>Finalizing Score';
 				clearInterval(intervalKey);
 				intervalKey = null;
-				document.getElementById('betweenTimerDiv').style.display = '';
 				startBetweenTimer(str_end_time);
 			}
 		}, 1000);
@@ -194,31 +184,46 @@ function startBetweenTimer(str_end_time){
 		betweenIntervalKey = setInterval(function(){
 			now = new Date().getTime(); //miliseconds
 			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
-			minutes = Math.abs(Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60)));
-			seconds = Math.abs(Math.floor((time_remaining % (1000 * 60)) / 1000));
-			
-			text = '';
-			if (time_remaining < 0){
-				text += "-";
-				timer_elem.style.color = 'red';
-			}
-			text += minutes + ":"
-			if (seconds < 10 && seconds > -10){
-				text += 0;
-			}
-			text += seconds;
-			timer_elem.innerHTML = text;
+			displayTime(time_remaining, timer_elem);
 		}, 1000);
 	}
 }
 
+function displayTime(time_remaining, timer_elem) {
+	minutes = Math.abs(Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60)));
+	seconds = Math.abs(Math.floor((time_remaining % (1000 * 60)) / 1000));
+	
+	text = '';
+	if (time_remaining < 0){
+		text += "-";
+		timer_elem.style.color = 'red';
+	}
+	text += minutes + ":"
+	if (seconds < 10 && seconds > -10){
+		text += 0;
+	}
+	text += seconds;
+	timer_elem.innerHTML = text;
+}
+
+weighin_safety_completed = { //makes simple dictionary in javascript or checking weigh ins and safety checks
+	// Format:   { team_id : [true/false, team_name]}
+	{% for team in teams_list %}
+		"{{ team.id }}": [{% if team.weigh_in and team.safety_check %}true{% else %}false{% endif %}, "{{ team.team_name }}"] ,
+	{% endfor %}
+}
+
 function newParticipant(select_elem, color_id){
-	webSocket.send(JSON.stringify({
-		'type':'newParticipant',
-		'team_id':select_elem.value,
-		'game_id':select_elem.getAttribute('data-game_id'),
-		'color':color_id,
-	}));
+	if (weighin_safety_completed[select_elem.value][0]){
+		webSocket.send(JSON.stringify({
+			'type':'newParticipant',
+			'team_id':select_elem.value,
+			'game_id':select_elem.getAttribute('data-game_id'),
+			'color':color_id,
+		}));
+	} else {
+		alert("Please complete the weigh in and safety check for " + weighin_safety_completed[select_elem.value][1] + " before queueing them for a game.\n\nThen refresh your browser.")
+	}
 }
 
 function addNewGame(){
@@ -228,8 +233,10 @@ function addNewGame(){
 }
 
 //sets up websocket and handles incoming data
+var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 var webSocket = new WebSocket(
-        'ws://' + window.location.host +
+		ws_scheme+
+        '://' + window.location.host +
         '/ws/gameQueue');
 
 webSocket.onmessage = function(e) { //Function that receives all incoming websocket data

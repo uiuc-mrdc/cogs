@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import permission_required
 from django.utils import timezone
 from .models import ScoringType, Team, Game, GameParticipant
 
-def index(request):
-    return render(request, "team_management/index.html", {})
+def home(request):
+    return render(request, "team_management/Home.html", {})
 
 @permission_required('team_management.is_judge')
 def gameX(request, game_id): #game_id comes from the url
@@ -23,6 +23,13 @@ def gameX(request, game_id): #game_id comes from the url
     game = Game.objects.get(pk=game_id)
     
     game_started = (game.start_time < timezone.now())
+    
+    try:
+        Game.objects.get(finished=False, start_time__lt=timezone.now())
+        other_active_game = True
+    except ObjectDoesNotExist:
+        other_active_game = False
+
     context = {
         'game':game, 
         'game_started':game_started,
@@ -31,6 +38,7 @@ def gameX(request, game_id): #game_id comes from the url
         'dragon_list':dragon_list,
         'treasurebox_list':treasurebox_list,
         'game_length':cfg.game_length,
+        'other_active_game':other_active_game,
         }
     return render(request, 'team_management/GameX.html', context)
     
@@ -47,16 +55,14 @@ def scoreboard(request, game_id):
         'game_started':game_started,
         'participant_list':participant_list,
         'game_length':cfg.game_length,
+        'time_between_matches':cfg.time_between_matches,
     }
     return render(request, 'team_management/scoreboard.html', context)
 
-def games(request):
+def gameQueue(request):
     try:
         current_game = Game.objects.get(finished=False, start_time__lt=timezone.now()).gameparticipant_set.all().select_related('team').select_related('game')
-    except 
-    
-    
-    :
+    except ObjectDoesNotExist:
         current_game = []
     except MultipleObjectsReturned:
         messages.error(request, "Oops, there are >1 active games. Make sure only one game is started without being finalized")
@@ -96,29 +102,72 @@ def games(request):
     }
     return render(request, 'team_management/GameQueue.html', context)
 
+def postWeighIn(request):
+    try:
+        team = Team.objects.get(pk=request.POST['team_id'])
+    except: #If no valid team, send back with an error
+        teams_list = Team.objects.all()
+        context = {
+            'teams_list':teams_list,
+            'error_message': "Please select a team"
+            }
+        return render(request, 'team_management/WeighIn.html', context)
+    else: #check and update both weight and safety if the team was valid
+        try:
+            if request.POST['weight'] == 'on': 
+                weight = True            
+        except: 
+            weight = False
+        finally:
+            try:
+                if request.POST['safety'] == 'on':
+                    safety = True
+            except:
+                safety = False
+            finally:
+                team.weigh_in = weight
+                team.safety_check = safety
+                team.save()
+                return HttpResponseRedirect(reverse('weigh_in'))
+
+def postResetWeighIn(request):
+    teams = Team.objects.all()
+    
+    for team in teams:
+        team.weigh_in = False
+        team.safety_check = False
+    
+    Team.objects.bulk_update(teams, ['weigh_in', 'safety_check'])
+    return HttpResponseRedirect(reverse('home'))
+
+
+@permission_required('team_management.is_judge')
+def weighIn(request):
+    teams_list = Team.objects.all()
+    context={'teams_list':teams_list}
+    return render(request, 'team_management/WeighIn.html', context)
+
 def postPhone(request):
     try:
-        print(request.POST)
         team = Team.objects.get(pk=request.POST['team_id'])
-        print('no error')
     except:
         teams_list = Team.objects.all()
-        context = {'teams_list':teams_list,
+        context = {
+            'teams_list':teams_list,
             'error_message': "Please select a team"
             }
         return render(request, 'team_management/addPhone.html', context)
     else:
-    
-        phone = Phone(
-            number = request.POST['num'],
-            team = team,
-            )
-        phone.save()
-        return HttpResponseRedirect(reverse('index'))
+        if request.POST['num'] != "8005551234": #does not save if it is the defualt number
+            phone = Phone(
+                number = request.POST['num'],
+                team = team,
+                )
+            phone.save()
+        return HttpResponseRedirect(reverse('home'))
 
 @login_required
 def addPhone(request):
-    teams_list = Team.objects.all()
-    print(teams_list)
+    teams_list = Team.objects.all().order_by('team_name')
     context={'teams_list':teams_list}
     return render(request, 'team_management/addPhone.html', context)
