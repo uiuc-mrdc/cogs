@@ -9,6 +9,8 @@ from django.db.models import CharField, TimeField, DateTimeField
 from django.db.models.functions import Cast
 from django.db.models.functions.datetime import TruncTime, TruncSecond
 
+from . import custom_config as cfg
+
 class GameConsumer(WebsocketConsumer):
     
     def connect(self):
@@ -97,7 +99,7 @@ class GameConsumer(WebsocketConsumer):
         }))
     
     def groupStartGame(self, dict_data):
-        game_length = 6 #GAME LENGTH (minutes)
+        game_length = cfg.game_length #GAME LENGTH (minutes)
         end_time = timezone.now() + timedelta(minutes=game_length)
         game = Game.objects.get(pk=dict_data['game_id'])
         game.end_time = end_time
@@ -109,13 +111,29 @@ class GameConsumer(WebsocketConsumer):
             'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
             'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") 
         })
+        async_to_sync(self.channel_layer.group_send)(
+            "timer_only",
+            {
+            'type':'StartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id'],
+            'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") 
+        })
     def clientStartGame(self, dict_data):
         self.send(text_data=json.dumps(dict_data))
     def groupPauseGame(self, dict_data):
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.pause_time = timedelta(milliseconds=dict_data['time_remaining'])
+        game.save()
         async_to_sync(self.channel_layer.group_send)(
             str(dict_data['game_id']),
             {
             'type':'clientPauseGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'time_remaining':dict_data['time_remaining']
+        })
+        async_to_sync(self.channel_layer.group_send)(
+            "timer_only",
+            {
+            'type':'PauseGame',
             'time_remaining':dict_data['time_remaining']
         })
     def clientPauseGame(self, dict_data):
@@ -124,12 +142,20 @@ class GameConsumer(WebsocketConsumer):
         end_time = timezone.now() + timedelta(milliseconds=dict_data['time_remaining'])
         game = Game.objects.get(pk=dict_data['game_id'])
         game.end_time = end_time
+        game.pause_time = timedelta(seconds=0)
         game.save()
         #note this is identical to groupStartGame from this point forward
         async_to_sync(self.channel_layer.group_send)(
             str(dict_data['game_id']),
             {
             'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S")
+        })
+        async_to_sync(self.channel_layer.group_send)(
+            "timer_only",
+            {
+            'type':'StartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id'],
             'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S")
         })
     def groupFinalizeGame(self, dict_data):
@@ -142,6 +168,12 @@ class GameConsumer(WebsocketConsumer):
             'type':'clientFinalizeGame', #note that this one directly calls the clientFinalizeGame method, rather than going through the receive method, since it is in a native python dict
             'game_id':dict_data['game_id']
         })
+        async_to_sync(self.channel_layer.group_send)(
+            "timer_only",
+            {
+            'type':'FinalizeGame', #note that this one directly calls the clientFinalizeGame method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id']
+        })
     def clientFinalizeGame(self, dict_data):
         self.send(text_data=json.dumps(dict_data))
     #updates score for all clients in the group for this game_participant's game_id
@@ -152,6 +184,14 @@ class GameConsumer(WebsocketConsumer):
             'type':'clientUpdateScore', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
             'participant_id':game_participant.id,
             'score':game_participant.calculateScore(),
+        })
+        async_to_sync(self.channel_layer.group_send)(
+            'game_queue',
+            {
+            'type':'UpdateScore', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'participant_id':game_participant.id,
+            'score':game_participant.calculateScore(),
+            'game_id':game_participant.game_id
         })
         
     def clientUpdateScore(self, dict_data): #when received from the group, sends the same data on to the client
@@ -167,3 +207,72 @@ class GameConsumer(WebsocketConsumer):
         'restartGame':groupRestartGame,
         'finalizeGame':groupFinalizeGame,
     }
+    
+class GameQueueConsumer(WebsocketConsumer):
+    def connect(self):
+        #adds itself to the group 'timer_only'
+        async_to_sync(self.channel_layer.group_add)('timer_only', self.channel_name)
+        async_to_sync(self.channel_layer.group_add)('game_queue', self.channel_name)
+        self.accept()
+
+    def disconnect(self, close_code):
+        #removes itself from the group
+        async_to_sync(self.channel_layer.group_discard)('timer_only', self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)('game_queue', self.channel_name)
+        pass
+    
+    def receive(self, text_data): #Only JSON messages from the client pass through this
+        dict_data = json.loads(text_data)
+        func = self.switcher.get(dict_data['type']) #switcher is at the bottom
+        return func(self, dict_data) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
+    
+    def StartGame(self, dict_data): #sends end_time and game_id #also used to restart the game after pausing
+        self.send(text_data=json.dumps(dict_data))
+
+    def PauseGame(self, dict_data): #sends time_remaining (in milliseconds) and game_id
+        self.send(text_data=json.dumps(dict_data))
+
+    def FinalizeGame(self, dict_data): #sends game_id
+        self.send(text_data=json.dumps(dict_data))
+        
+    def UpdateScore(self, dict_data): #sends score, game_id, and participant_id
+        self.send(text_data=json.dumps(dict_data))
+    
+    def groupNewParticipant(self, dict_data):
+        new_participant = GameParticipant(
+            team = Team.objects.get(pk=dict_data['team_id']),
+            game = Game.objects.get(pk=dict_data['game_id']),
+            color = dict_data['color'],
+        )
+        new_participant.save()
+        async_to_sync(self.channel_layer.group_send)(
+            'game_queue',
+            {
+            'type':'clientNewParticipant', #note that this one directly calls the clientNewParticipant method, rather than going through the receive method, since it is in a native python dict
+            'participant_id':new_participant.id,
+            'team_name':new_participant.team.team_name,
+            'game_id':new_participant.game_id,
+            'color':dict_data['color'],
+        })
+        
+    def clientNewParticipant(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+    
+    def groupNewGame(self, dict_data):
+        new_game = Game.objects.create()
+        async_to_sync(self.channel_layer.group_send)(
+            'game_queue',
+            {
+            'type':'clientNewGame', #note that this one directly calls the clientNewGame method, rather than going through the receive method, since it is in a native python dict
+            'game_id':new_game.id,
+        })
+    
+    def clientNewGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+        
+    switcher = {
+        'newParticipant':groupNewParticipant,
+        'newGame':groupNewGame,
+    }
+    
+    

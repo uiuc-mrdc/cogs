@@ -1,0 +1,303 @@
+{% extends "team_management/index.html" %}
+
+{% block css %}
+	{% load static %}
+	{{ block.super }}
+	<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
+    <link rel="stylesheet" href="{% static 'team_management/GameQueue.css' %}">
+{% endblock %}
+
+{% block body %}
+
+<h1 class="title">Current Game</h1>
+<div id="CurrentGame">
+	{% if participant_list %}
+		<div id="{{ participant_list.0.game_id }}" class="game">
+			<div id="gameTimer" class="column" style="width:10%">Loading...</div>
+			{% for participant in participant_list %}
+				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
+					<div id="{{ participant.game_id }}_color{{ participant.color }}" class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+				</div>
+			{% endfor %}
+			<div class="column" style="width:10%">
+				{% if perms.team_management.is_judge %}
+					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<br>
+				{% endif %}
+				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+			</div>
+		</div>
+	{% endif %}
+	<h4 id="betweenTimerDiv" style="display:none">Estimated time to next game: <span id="betweenTimer">Loading...</span></h4>
+</div>
+<!-------------------------------------------------------------->
+
+<h1 class="title">Upcoming Games</h1>
+<div id="UpcomingGames">	
+	{% for participant_list in upcoming_games_list %}
+		<div id="{{ participant_list.0.game_id }}" class="game">
+			<div class="column" style="width:10%">{{ game_length }}:00</div>
+			{% for participant in participant_list %}
+				{% if participant.color != 0 %}
+				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
+					<div id="{{ participant.game_id }}_color{{ forloop.counter }}" class="teamName color{{ forloop.counter }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+				</div>
+				{% else %}
+					<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
+						<div id="{{ participant.game_id }}_color{{ forloop.counter }}" class="teamName color{{ forloop.counter }}">
+							<select style="width:90%" data-game_id="{{ participant.game_id }}" {% if user.is_authenticated %}onchange="newParticipant(this, {{ forloop.counter }})"{% endif %}>
+								<option value=''></option>
+								{% if user.is_authenticated %}
+									{% if perms.team_management.is_judge %}
+										{% for team in teams_list %}
+											<option value="{{ team.id }}">{{ team.team_name }}</option>
+										{% endfor %}
+									{% elif perms.team_management.is_team %}
+										<option value="{{ user.team.id }}">{{ user.team.team_name }}</option>
+									{% endif %}
+								{% endif %}
+							</select>
+						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+			<div class="column" style="width:10%">
+				{% if perms.team_management.is_judge %}
+					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<br>
+				{% endif %}
+				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+			</div>
+		</div>
+	{% endfor %}
+</div>
+{% if perms.team_management.is_judge %}
+	<button id="newGameButton" onclick="addNewGame()">Add New Game</button>
+{% endif %}
+
+<!----------------------Hidden Blank Game--------------------------------->
+
+	<div id="emptyGame" class="game">
+		<div class="column" style="width:10%">{{ game_length }}:00</div>
+		{% for participant in empty_game %}
+			<div class="column" style="width:{% widthratio 1 empty_game|length 79 %}%">
+				<div class="teamName color{{ forloop.counter }}">
+					<select style="width:90%" data-game_id="null" {% if user.is_authenticated %}onchange="newParticipant(this, {{ forloop.counter }})"{% endif %}>
+						<option value=''></option>
+						{% if user.is_authenticated %}
+							{% if perms.team_management.is_judge %}
+								{% for team in teams_list %}
+									<option value="{{ team.id }}">{{ team.team_name }}</option>
+								{% endfor %}
+							{% elif perms.team_management.is_team %}
+								<option value="{{ user.team.id }}">{{ user.team.team_name }}</option>
+							{% endif %}
+						{% endif %}
+					</select>
+				</div>
+			</div>
+		{% endfor %}
+		<div class="column" style="width:10%">
+			{% if perms.team_management.is_judge %}
+				<a href="{% url 'gameX' game_id=0 %}">Judging</a>
+				<br>
+			{% endif %}
+			<a href="{% url 'scoreboard' game_id=0 %}">Scoreboard</a>
+		</div>
+	</div>
+	
+<!--------------------------Completed Games----------------------------------->
+
+<h1 class="title">Completed Games</h1>
+<div id="CompletedGames">	
+	{% for participant_list in finished_games_list %}
+		<div id="{{ participant_list.0.game_id }}" class="game">
+			<div class="column" style="width:10%">0:00</div>
+			{% for participant in participant_list %}
+				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
+					<div id="{{ participant.game_id }}_color{{ participant.color }}" class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
+				</div>
+			{% endfor %}
+			
+			<div class="column" style="width:10%">
+				{% if perms.team_management.is_judge %}
+					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<br>
+				{% endif %}
+				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+			</div>
+		</div>
+	{% endfor %}
+</div>
+{% endblock %}
+
+<script>
+{% block script %}
+{% if messages %}
+	{% for message in messages %}
+		alert("{{ message }}")
+	{% endfor %}
+{% endif %}
+
+var intervalKey = null;
+var betweenIntervalKey = null;
+var pause_time=0;
+{% if participant_list %}
+	{% with participant=participant_list|first %}
+		pause_time={{ participant.game.pause_time.seconds }};
+		startTimer("{{ participant.game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ participant.game.end_time|time:"H:i:s" }}");
+	{% endwith %}
+{% else %}
+	startBetweenTimer("{{ finished_games_list.0.0.game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ finished_games_list.0.0.game.end_time|time:"H:i:s" }}")
+{% endif %}
+
+var time_remaining;
+function startTimer(str_end_time){
+	var end_time = new Date(str_end_time).getTime();
+	var timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
+	if (intervalKey == null){
+		intervalKey = setInterval(function(){
+			now = new Date().getTime();
+			if (pause_time > 0){
+				time_remaining = pause_time*1000;
+				clearInterval(intervalKey);
+				intervalKey = null;
+			} else {
+				time_remaining = end_time-now;
+			}
+			minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+			seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+			
+			text = minutes + ":"
+			if (seconds < 10){
+				text += 0;
+			}
+			text += seconds;
+			timer_elem.innerHTML = text;
+			
+			if (time_remaining <=0){
+				timer_elem.innerHTML = 'Time Over<br>Finalizing Score';
+				clearInterval(intervalKey);
+				intervalKey = null;
+				document.getElementById('betweenTimerDiv').style.display = '';
+				startBetweenTimer(str_end_time);
+			}
+		}, 1000);
+	}
+}
+
+function startBetweenTimer(str_end_time){
+	var end_time = new Date(str_end_time).getTime(); //stored as miliseconds
+	var timer_elem = document.getElementById('betweenTimer') //saves elem before the loop (more efficient)
+	timer_elem.parentNode.style.display = '';
+	if (betweenIntervalKey == null){
+		betweenIntervalKey = setInterval(function(){
+			now = new Date().getTime(); //miliseconds
+			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
+			minutes = Math.abs(Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60)));
+			seconds = Math.abs(Math.floor((time_remaining % (1000 * 60)) / 1000));
+			
+			text = '';
+			if (time_remaining < 0){
+				text += "-";
+				timer_elem.style.color = 'red';
+			}
+			text += minutes + ":"
+			if (seconds < 10 && seconds > -10){
+				text += 0;
+			}
+			text += seconds;
+			timer_elem.innerHTML = text;
+		}, 1000);
+	}
+}
+
+function newParticipant(select_elem, color_id){
+	webSocket.send(JSON.stringify({
+		'type':'newParticipant',
+		'team_id':select_elem.value,
+		'game_id':select_elem.getAttribute('data-game_id'),
+		'color':color_id,
+	}));
+}
+
+function addNewGame(){
+	webSocket.send(JSON.stringify({
+		'type':'newGame',
+	}));
+}
+
+//sets up websocket and handles incoming data
+var webSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/gameQueue');
+
+webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
+	var data = JSON.parse(e.data);
+	
+	switch(data['type']) {
+
+		case 'StartGame':
+			game = document.getElementById(data['game_id']);
+			document.getElementById('CurrentGame').prepend(game);
+			game.firstElementChild.id="gameTimer";
+			pause_time = 0;
+			startTimer(data['end_time']);
+			document.getElementById('betweenTimerDiv').style.display = 'none';
+			clearInterval(betweenIntervalKey);
+			betweenIntervalKey = null;
+			break;
+		case 'PauseGame':
+			time_remaining = data['time_remaining'];
+			pause_time = data['time_remaining'] / 1000;
+			clearInterval(intervalKey);
+			intervalKey = null;
+			break;
+		case 'FinalizeGame':
+			var timer_elem = document.getElementById('gameTimer');
+			timer_elem.innerHTML = "0:00";
+			timer_elem.id = null;
+			game = document.getElementById(data['game_id']);
+			document.getElementById('CompletedGames').prepend(game);
+			break;
+		case 'UpdateScore':
+			document.getElementById(data['game_id'] + "_" + data['participant_id']).innerHTML = data['score'];
+			break;
+		case 'clientNewParticipant':
+			div_elem = document.getElementById(data["game_id"] + "_color" + data['color']);
+			div_elem.firstElementChild.remove();
+			div_elem.innerHTML = data['team_name'] + " ";
+			//Creates new span
+			span_elem = document.createElement('span');
+			span_elem.innerHTML = 0;
+			span_elem.id = data['game_id'] + "_" + data['participant_id'];
+			span_elem.style.fontWeight = 'bold';
+			div_elem.appendChild(span_elem)
+			break;
+		case 'clientNewGame':
+			newGame_elem = document.getElementById('emptyGame').cloneNode(true);
+			newGame_elem.id = data['game_id'];
+			for (var i=1; i<={{ empty_game|length }}; i++){
+				team_div_elem = newGame_elem.querySelector(".color" + i);
+				team_div_elem.id = data['game_id'] + '_color' + i;
+				team_div_elem.querySelector("select").setAttribute('data-game_id', data['game_id'])
+			}
+			for (var link of newGame_elem.querySelectorAll('a')){
+				text = link.getAttribute('href');
+				pos = text.indexOf('0');
+				newtext = text.slice(0,pos) + data['game_id'] + '/';
+				link.setAttribute('href', newtext);
+			}
+			
+			document.getElementById('UpcomingGames').appendChild(newGame_elem);
+			break;
+	}
+};
+
+webSocket.onclose = function(e) {
+	console.error('Websocket closed unexpectedly');
+	//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
+};
+
+{% endblock %}
+</script>

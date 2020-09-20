@@ -49,17 +49,22 @@ def initializeDb(apps, schema_editor):
     from django.contrib.contenttypes.models import ContentType
 
     content_type = ContentType.objects.get_for_model(Game)
-    permission = Permission.objects.create(
-        codename='judge',
-        name='judge',
-        content_type=content_type,
-    )
+    judge_perm = Permission.objects.create(
+        codename='is_judge',
+        name='is_judge',
+        content_type=content_type,)
     
     judge = User.objects.create_user('judge', 'test@test.com', 'password')
-    judge.user_permissions.add(permission)
+    judge.user_permissions.add(judge_perm)
     judge.save() #needs save for the permission
     
-    audience = User.objects.create_user('audience', 'test@test.com', 'password')
+    audience = User.objects.create_user('audience', 'test@test.com', 'password') #No permissions
+    
+    content_type = ContentType.objects.get_for_model(Team)
+    team_perm = Permission.objects.create(
+        codename='is_team',
+        name='is_team',
+        content_type=content_type,)
     
     import csv
     import random
@@ -72,13 +77,13 @@ def initializeDb(apps, schema_editor):
             password = "".join(random.sample(s, passlen))
             user = User.objects.create_user(team['Name'], team['Email'], password)
             Team.objects.create(user=user,  team_name=team['Name'], school_name=team['School'], abbr=team['Abbr'], capt_name=team['Captain Name'])
+            user.user_permissions.add(team_perm)
+            user.save()
     
-    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="yellow")
-    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="red")
-    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1), color="blue")
-    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1), color="green")
-    
-
+    testTeamUser = User.objects.create_user('MRDCTestTeam', 'test@test.com', "password")
+    Team.objects.create(user=testTeamUser,  team_name='MRDCTestTeam', school_name='UIUC', abbr='MRDCTT', capt_name='Michael Gale')
+    testTeamUser.user_permissions.add(team_perm)
+    testTeamUser.save()
     
 class Migration(migrations.Migration):
 
