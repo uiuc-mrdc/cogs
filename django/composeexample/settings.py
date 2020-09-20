@@ -73,6 +73,15 @@ WSGI_APPLICATION = 'composeexample.wsgi.application'
 
 ASGI_APPLICATION = "composeexample.routing.application"
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
+
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 DATABASES = {

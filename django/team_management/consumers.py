@@ -1,58 +1,169 @@
 from channels.generic.websocket import WebsocketConsumer
 import json
 from django.utils import timezone
-from .models import Action, ScoringType, Team, Game
+from datetime import timedelta
+from .models import Action, ScoringType, Team, Game, GameParticipant
+import pytz
+from asgiref.sync import async_to_sync
+from django.db.models import CharField, TimeField, DateTimeField
+from django.db.models.functions import Cast
+from django.db.models.functions.datetime import TruncTime, TruncSecond
 
 class GameConsumer(WebsocketConsumer):
+    
     def connect(self):
+        #adds itself to the group for its game_id
+        async_to_sync(self.channel_layer.group_add)(str(self.scope["url_route"]["kwargs"]["game_id"]), self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
+        #removes itself from the group
+        async_to_sync(self.channel_layer.group_discard)(str(self.scope["url_route"]["kwargs"]["game_id"]), self.channel_name)
         pass
 
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        func = self.switcher.get(text_data_json['type']) #switcher is at the bottom
-        return func(self, text_data_json) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
+    def receive(self, text_data): #Only JSON messages from the client pass through this
+        dict_data = json.loads(text_data)
+        func = self.switcher.get(dict_data['type']) #switcher is at the bottom
+        return func(self, dict_data) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
         
     def addStandardAction(self, json_data):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
-        team = Team.objects.get(pk=json_data['team_id'])
-        game = Game.objects.get(pk=json_data['game_id'])
+        game_participant = GameParticipant.objects.get(pk=json_data['participant_id'])
         multiplier = json_data['multiplier']
+        #updates db
         action = Action(
             scoring_type = scoring_type, 
             time = timezone.now(), 
-            team = team, 
+            game_participant = game_participant,
             multiplier = multiplier,
-            game = game)
+            value = 1)
         action.save()
         
+        #sends updated score to the group
+        self.groupUpdateScore(game_participant)
+
+        #sends response for making delete button ##This is necessary to store the action id
         self.send(text_data=json.dumps({
-            'team_name':team.team_name,
+            'type':'deleteButton',
             'action_id':action.id,
-            'scoringType_name':scoring_type.name,
-            'scoringType_id':scoring_type.id,
-            'time':str(action.time),
+            'scoring_type_name':scoring_type.name,
+            'scoring_type_id':scoring_type.id,
+            'multiplier':multiplier,
+            'time':action.time.astimezone(pytz.timezone('America/Chicago')).strftime("%H:%M:%S"),
         }))
     
-    def addCounterAction(self, json_data):
+    def updateCounterAction(self, json_data):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
-        team = Team.objects.get(pk=json_data['team_id'])
-        game = Game.objects.get(pk=json_data['game_id'])
-        #multiplier = ?????
-        direction = json_data['value']
-        action = Action(scoring_type=scoring_type, time=timezone.now(), team=team, game=game, upDown=direction)
+        game_participant = GameParticipant.objects.get(pk=json_data['participant_id'])
+        multiplier = json_data['multiplier']
+        value = json_data['value']
+        action, created = Action.objects.get_or_create(#If it doesn't exist yet creates the db row
+            scoring_type=scoring_type, 
+            game_participant=game_participant)
+        #updates the db row's values
+        action.multiplier = multiplier
+        action.time = timezone.now()
+        action.value = value
         action.save()
+        
+        self.groupUpdateScore(game_participant)
+        
         #note there is no response, since it doesn't need a delete button
     
     def deleteAction(self, json_data):
         action = Action.objects.get(pk=json_data['action_id'])
         action.deleted = True
         action.save()
+        self.groupUpdateScore(action.game_participant)
+   
+    def changeTeam(self, dict_data):
+        action_list = list(Action.objects.filter(
+            game_participant=dict_data['participant_id']
+        ).filter(
+            deleted=False
+        ).order_by('scoring_type', 'id'
+        ).values(
+            'id',
+            'scoring_type',
+            'value', 
+            'multiplier',
+            #truncates the decimal off the seconds, then truncates down to the time, then casts it as a string
+            str_time = Cast(TruncTime(TruncSecond('time', DateTimeField(), tzinfo=pytz.timezone('UTC')), TimeField(), tzinfo=pytz.timezone('America/Chicago')), CharField())
+        ))
+        
+        self.send(text_data=json.dumps({
+            'type': 'changeTeam',
+            'actions': action_list
+        }))
+    
+    def groupStartGame(self, dict_data):
+        game_length = 6 #GAME LENGTH (minutes)
+        end_time = timezone.now() + timedelta(minutes=game_length)
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.end_time = end_time
+        game.start_time = end_time - timedelta(minutes=game_length)
+        game.save()
+        async_to_sync(self.channel_layer.group_send)(
+            str(dict_data['game_id']),
+            {
+            'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S") 
+        })
+    def clientStartGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+    def groupPauseGame(self, dict_data):
+        async_to_sync(self.channel_layer.group_send)(
+            str(dict_data['game_id']),
+            {
+            'type':'clientPauseGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'time_remaining':dict_data['time_remaining']
+        })
+    def clientPauseGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+    def groupRestartGame(self, dict_data):
+        end_time = timezone.now() + timedelta(milliseconds=dict_data['time_remaining'])
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.end_time = end_time
+        game.save()
+        #note this is identical to groupStartGame from this point forward
+        async_to_sync(self.channel_layer.group_send)(
+            str(dict_data['game_id']),
+            {
+            'type':'clientStartGame', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'end_time':end_time.astimezone(pytz.timezone('America/Chicago')).strftime("%m/%d/%Y, %H:%M:%S")
+        })
+    def groupFinalizeGame(self, dict_data):
+        game = Game.objects.get(pk=dict_data['game_id'])
+        game.finished = True
+        game.save()
+        async_to_sync(self.channel_layer.group_send)(
+            str(dict_data['game_id']),
+            {
+            'type':'clientFinalizeGame', #note that this one directly calls the clientFinalizeGame method, rather than going through the receive method, since it is in a native python dict
+            'game_id':dict_data['game_id']
+        })
+    def clientFinalizeGame(self, dict_data):
+        self.send(text_data=json.dumps(dict_data))
+    #updates score for all clients in the group for this game_participant's game_id
+    def groupUpdateScore(self, game_participant):
+        async_to_sync(self.channel_layer.group_send)(
+            str(game_participant.game_id),
+            {
+            'type':'clientUpdateScore', #note that this one directly calls the clientUpdateScore method, rather than going through the receive method, since it is in a native python dict
+            'participant_id':game_participant.id,
+            'score':game_participant.calculateScore(),
+        })
+        
+    def clientUpdateScore(self, dict_data): #when received from the group, sends the same data on to the client
+        self.send(text_data=json.dumps(dict_data))
         
     switcher = { #must be defined after the functions
         'delete':deleteAction,
         'addStandardAction':addStandardAction,
-        'addCounterAction':addCounterAction,
+        'updateCounterAction':updateCounterAction,
+        'changeTeam': changeTeam,
+        'startGame':groupStartGame,
+        'pauseGame':groupPauseGame,
+        'restartGame':groupRestartGame,
+        'finalizeGame':groupFinalizeGame,
     }

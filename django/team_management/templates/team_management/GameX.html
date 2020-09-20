@@ -9,35 +9,60 @@
 
 
 {% block body %}
-	<h1>{{ game_id }}</h1>
+	<h1>Game #{{ game.id }}</h1>
 	
-	<p>
-		Choose Team: <select id="teamSelector">
-			<option value="0"></option>
-			{% for participant in participant_list %}
-				<option value="{{ participant.team.id }}">{{ participant.team.team_name }}</option> <!-- Change this to pick from only the teams in this game_id -->
-			{% endfor %}
-		</select>
-	</p>
-	
-	<div class="dragon_counters">
-		{% for counter in counter_list %}
-			<span class="{{ counter.name }}" style="position:relative">
-				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, -1)" ></button>
-				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="counter({{ counter.id }}, 1)" ></button>
-				<input type="number" min="0" step="1" value="0" id="{{ counter.id }}">
-			</span>
-		{% endfor %}
+	<div>
+		<span id="gameTimer">6:00</span>
+		<button id="start" onclick="startGame()">Start Game</button>
+		<button id="pause" onclick="pauseGame()" style="display:none">Pause Game</button>
+		<button id="restart" onclick="restartGame()" style="display:none">Restart Game</button>
+		<button id="finalize" onclick="finalizeGame()" style="display:none">Finalize Game</button>
 	</div>
 	
+	<div class="scoreboard">
+		{% for participant in participant_list %}
+			<div class="column" style="width:{% widthratio 1 participant_list|length 100 %}%">
+				<input type="radio" name="team" onclick="changeTeam(this.value)" value="{{ participant.id }}" id="participant{{ participant.id }}">
+				<label for="participant{{ participant.id }}" class="teamName" style="background-color: {{ participant.color }}">{{ participant.team.team_name }}</label>
+				<h1 id="score{{ participant.id }}">
+				{{ participant.score }}
+				</h1>
+			</div>
+		{% endfor %}
+	</div>
 
+	<div class="counters">
+		Dragon Scoring Bin Balls:
+		<p>
+		{% for counter in dragon_list %}
+			<span class="{{ counter.name }}" style="position:relative">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.nextElementSibling.stepDown();counter({{ counter.id }})"></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.stepUp();counter({{ counter.id }})" ></button>
+				<input type="number" step="1" value="0" id="{{ counter.id }}" onchange="counter({{ counter.id }})" class="value">
+			</span>
+		{% endfor %}
+		</p>
+	</div>
 	
-	<div class="StandardButtons">
+	<div class="standardDiv">
 	{% for scoringType in standard_buttons_list %}
-		<button class="{{ scoringType.input_group }}" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
+		<button class="{{ scoringType.input_style }} value" id="{{ scoringType.id }}" data-name="{{ scoringType.name }}" data-limit="{{ scoringType.limit }}" value="0" onclick="standard({{ scoringType.id }})">{{ scoringType.name }} 0{% if scoringType.limit != 0 %}/{{ scoringType.limit }}{% endif %}</button>
 	{% endfor %}
 	</div>
 	
+	<div class="counters">
+		Treasure Box Balls:
+		<p>
+		{% for counter in treasurebox_list %}
+			<span class="{{ counter.name }}" style="position:relative">
+				<button class="down" style="border-top: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.nextElementSibling.stepDown();counter({{ counter.id }})" ></button>
+				<button class="up" style="border-bottom: 1em solid {{ counter.extra_data }}" onclick="this.nextElementSibling.stepUp();counter({{ counter.id }})" ></button>
+				<input type="number" step="1" value="0" id="{{ counter.id }}" change="counter({{ counter.id }})"class="value">
+			</span>
+		{% endfor %}
+		</p>
+	</div>
+
 	<div class="MultiplierButtons">
 		<label class="checkbox-label">
 			<input type="checkbox" id="flyingCheck" onclick="updateMultiplier()">
@@ -52,37 +77,114 @@
 			<span class="checkbox-custom">Autonomous</span>
 		</label>
 	</div>
-	<div id="testText"></div>
-	<div id="deleteButtons"></div>
+	
+	<div class="deleteButtonDiv">
+		<table id="deleteButtonTable" style="width:90%; margin:auto">
+			<tbody id="deleteButtonBody">
+			<tr>
+				<th>Delete</th>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Multiplier</th>
+				<th>Time</th>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+	<div id="opaque"></div>
+	<div id="dialogBox">
+		<h2>Time Over. Please Acknowledge</h2>
+		<button onclick="this.parentNode.style.display = 'none'; document.getElementById('opaque').style.display = 'none'">OK</button>
+	</div>
 {% endblock %}
 
 
 
 <script> <!--This tag and its endtag are there strictly for text highlighting in your text editor--> They are not in a block and don't appear in the html render as shown by this text
 {% block script %}
+{% if game_started %}
+	startTimer("{{ game.end_time|date:"SHORT_DATE_FORMAT" }}, {{ game.end_time|time:"H:i:s" }}");
+{% endif %}
+function startGame(){
+	webSocket.send(JSON.stringify({
+		'type':'startGame',
+		'game_id':{{ game.id }},
+	}));
+}
+function pauseGame(){
+	webSocket.send(JSON.stringify({
+		'type':'pauseGame',
+		'game_id':{{ game.id }},
+		'time_remaining':time_remaining
+	}));
+}
+function restartGame(){
+	webSocket.send(JSON.stringify({
+		'type':'restartGame',
+		'game_id':{{ game.id }},
+		'time_remaining':time_remaining
+	}));
+}
+function finalizeGame(){
+	webSocket.send(JSON.stringify({
+		'type':'finalizeGame',
+		'game_id':{{ game.id }},
+	}));
+}
+var time_remaining;
+var intervalKey;
+function startTimer(str_end_time){
+	document.getElementById('pause').style.display ='';
+	document.getElementById('start').style.display = 'none';
+	document.getElementById('restart').style.display = 'none';
+	end_time = new Date(str_end_time).getTime();
+	timer_elem = document.getElementById('gameTimer') //saves elem before the loop (more efficient)
+	intervalKey = setInterval(function(){
+		now = new Date().getTime();
+		
+		time_remaining = end_time-now;
+		minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+		seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+		
+		text = minutes + ":"
+		if (seconds < 10){
+			text += 0;
+		}
+		text += seconds;
+		timer_elem.innerHTML = text;
+		
+		if (time_remaining <=0){
+			timer_elem.innerHTML = 'Time Over';
+			document.getElementById('opaque').style.display ='block';
+			document.getElementById('dialogBox').style.display ='block';
+			clearInterval(intervalKey);
+			document.getElementById('pause').style.display = 'none';
+			document.getElementById('start').style.display = 'none';
+			document.getElementById('finalize').style.display = '';
+		}
+	}, 1000);
+	
+}
+
+//handles standard button presses
 function standard(id){
-	checkTeam()
+	checkTeam();
+	checkGame();
 	button = document.getElementById(id);
 	limit = button.getAttribute('data-limit');
 	if(limit == 0 || button.value < limit){
 		button.value = parseInt(button.value) + 1;
-		sendAction(id, parseInt(button.value), 'addStandardAction');
+		sendAction(id, 'addStandardAction');
 	}
 	drawButton(button);
 }
 
-function counter(id, direction) {
+//handles counter changes
+function counter(id) {
 	checkTeam();
+	checkGame();
 	inputElem = document.getElementById(id);
-	if (direction == 1) {
-		inputElem.stepUp();
-		sendAction(id, 1, 'addCounterAction');
-	} else {
-		if (inputElem.value >0){
-			inputElem.stepDown();
-			sendAction(id, 0, 'addCounterAction');
-		}
-	}
+	sendAction(id, 'updateCounterAction', parseInt(inputElem.value));
 }
 var multiplier = 1;
 
@@ -97,6 +199,7 @@ function updateMultiplier(){
 	if (autonomous.checked){multiplier*=4}
 }
 
+//fixes innerHTML for standard buttons
 function drawButton(button){
 	limit = button.getAttribute('data-limit');
 	name = button.getAttribute('data-name');
@@ -106,60 +209,154 @@ function drawButton(button){
 	}
 }
 
-var chatSocket = new WebSocket(
+//sets up websocket and handles incoming data
+var webSocket = new WebSocket(
         'ws://' + window.location.host +
-        '/ws/game/');
+        '/ws/game/{{ game.id }}');
 
-    chatSocket.onmessage = function(e) {
+    webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
         var data = JSON.parse(e.data);
-        //var message = data['message'];
-		document.getElementById("testText").innerHTML += 'success!';
-		document.getElementById("deleteButtons").innerHTML += 
-			"<p data-action_id='" + data['action_id'] + "' " + "data-scoringType_id='" + data['scoringType_id'] + "'>" +
-			"<button onclick='deleteInDb(this.parentNode)'>Delete</button> " +
-			data['action_id'] + " | " + 
-			data['time'] + " | " + 
-			data['scoringType_name'] + " | " +
-			data['team_name'] + 
-			"</p>";
+		
+		switch(data['type']) {
+			case 'deleteButton':
+				drawDeleteButtonRow(data['scoring_type_id'], data['action_id'], data['scoring_type_name'], data['multiplier'], data['time']);
+				break;
+			case 'clientUpdateScore':
+				document.getElementById("score" + data['participant_id']).innerHTML = data['score'];
+				break;
+			case 'clientStartGame':
+				startTimer(data['end_time']);
+				game_active = true;
+				break;
+			case 'clientPauseGame':
+				time_remaining = data['time_remaining'];
+				clearInterval(intervalKey);
+				document.getElementById('pause').style.display ='none';
+				document.getElementById('restart').style.display = '';
+				break;
+			case 'clientFinalizeGame':
+				game_active = false;
+				document.getElementById('finalize').style.display = 'none'
+				document.getElementById('gameTimer').innerHTML = "Game Finalized";
+				break;
+			case 'changeTeam':
+				var delete_table = document.getElementById('deleteButtonTable')
+				for (var i = delete_table.rows.length-1; i > 0; i--){
+					delete_table.deleteRow(i);
+				}
+				//sets all values to 0, and redraws buttons at 0
+				for (i in value_elems){
+					value_elems[i].value = 0;
+					if(value_elems[i].nodeName == "BUTTON"){
+						drawButton(value_elems[i]);
+					}
+				}
+				//generate all delete buttons and update values
+				//data['actions'] is a list of dictionaries with keys: 'scoring_type', 'value', 'multiplier', 'str_time'
+				var prev_scoring_type = 0;
+				var cont = true;
+				for (i in data['actions']){ // loop through all actions in db
+					if (data['actions'][i]['scoring_type'] != prev_scoring_type){
+						prev_scoring_type = data['actions'][i]['scoring_type'];
+						if (cont == false && elem.nodeName =="BUTTON"){ //draw previous button, since its value is up to date
+							drawButton(elem); //previous button elem
+						}
+						cont = false; //don't auto-skip anymore
+						try {
+							elem = document.getElementById(data['actions'][i]['scoring_type']);
+							elem.value = data['actions'][i]['value']; //NOT += (resets old value)
+							//build delete button
+							if (elem.nodeName == "BUTTON"){
+								drawDeleteButtonRow(data['actions'][i]['scoring_type'], data['actions'][i]['id'], elem.getAttribute('data-name'), data['actions'][i]['multiplier'], data['actions'][i]['str_time']);
+							}
+						} 
+						catch(err) { //scoring_type is not scored on judging client
+							cont = true; //skip until new scoring_type
+							continue;
+						}
+					} else if (cont == true){ //skip actions not on the judging page
+						continue;
+					} else { //scoring_type == prev_scoring_type, AND cont == false
+						elem.value = parseInt(elem.value) + data['actions'][i]['value'];
+						if (elem.nodeName == "BUTTON"){
+							drawDeleteButtonRow(data['actions'][i]['scoring_type'], data['actions'][i]['id'], elem.getAttribute('data-name'), data['actions'][i]['multiplier'], data['actions'][i]['str_time']);
+						}
+					}
+				}
+				if (cont == false){ //draw last action if necessary
+					drawButton(elem);
+				}
+				break;
+		}
     };
 	
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
+    webSocket.onclose = function(e) {
+        console.error('Websocket closed unexpectedly');
 		//alert('WebSocket connection closed. Please refresh')  Add this in later but probably not during development
     };
 
-function sendAction(id, value, type){
-	team_id = document.getElementById('teamSelector').value
-	chatSocket.send(JSON.stringify({
+function drawDeleteButtonRow(scoring_type_id, action_id, scoring_type_name, multiplier, time){
+	document.getElementById("deleteButtonTable").innerHTML +=
+		"<tr><td><button onclick='deleteInDb(this.parentNode.nextElementSibling)'>Delete</button></td>" + 
+		"<td data-scoringType_id='" + scoring_type_id + "'>" + action_id + "</td>" +
+		"<td>" + scoring_type_name + "</td>" + 
+		"<td>" + multiplier + "</td>" +
+		"<td>" + time + "</td></tr>"
+}
+
+//sends an action (called in standard() and counter())
+function sendAction(id, type, value=1){
+	//participant_id = document.getElementById('teamSelector').value
+	webSocket.send(JSON.stringify({
 		'type':type,
         'scoringType_id':id, 
-		'team_id':team_id,
+		'participant_id':participant_id,
 		'value':value,
 		'multiplier':multiplier,
-		'game_id':{{ game_id }},
+		'game_id':{{ game.id }},
     }));
 }
 
-function deleteInDb(ptag){
-	
-	chatSocket.send(JSON.stringify({
+//handles the delete buttons at the bottom of the page
+function deleteInDb(elem){ //<td> elem containing the action_id
+	webSocket.send(JSON.stringify({
 		'type':'delete',
-		'action_id':ptag.getAttribute('data-action_id'),
+		'action_id':elem.innerHTML,
 	}));
-	//sendAction(ptag.getAttribute('data-action_id'), 0, 'delete');
 	
-	button = document.getElementById(ptag.getAttribute('data-scoringType_id'));
+	//Fixes counts on the button
+	button = document.getElementById(elem.getAttribute('data-scoringType_id'));
 	button.value = button.value - 1;
 	drawButton(button);
-	
-	ptag.style.textDecoration = 'line-through';
-	ptag.style.opacity = '75%';
-	ptag.querySelector('button').remove();
+
+	//changes formatting to show it is deleted
+	rowElem = elem.parentNode;
+	rowElem.style.textDecoration = 'line-through';
+	rowElem.style.opacity = '75%';
+	rowElem.querySelector('button').remove();
 }
 
+var value_elems = document.querySelectorAll('.value'); //used when changeTeam action data is retured by Django
+var participant_id = 0; //current team ID //used a lot
+function changeTeam(value){
+	participant_id = value;
+	//send request to Django to send back all of the team's actions
+	webSocket.send(JSON.stringify({
+		'type':'changeTeam',
+		'participant_id':participant_id,
+	}));
+}
+
+var game_active = {% if game_started and not game.finished %}true{% else %}false{% endif %};
+function checkGame(){
+	if (game_active == false){
+		alert("Game is not active, cannot accept inputs");
+		throw new Error("Game is not active. This means the game is either not started, or already finalized");
+	}
+}
+//throws error if no team is selected (called in standard() and counter())
 function checkTeam(){
-	if(document.getElementById('teamSelector').value == '0'){
+	if(participant_id == '0'){
 		alert("Please choose a team");
 		throw new Error("Choose a team before sending data")
 	}

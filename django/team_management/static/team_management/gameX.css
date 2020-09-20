@@ -9,7 +9,7 @@ input[type=number] {
 	text-align: center;
 	font-size: 1em;
 	padding: .25em;
-	margin: 0em 0.25em 0em 0em;
+	margin: 1em 0.25em 1em 0em;
 
 }
 
@@ -77,8 +77,8 @@ button.down {
 	top: 1.125em;
 }
 
-.dragon_counters {
-	margin: 20px 0px 20px 0px;
+.counters {
+	margin: 20px 0px 0px 0px;
 }
 
 .Standard {
@@ -90,5 +90,59 @@ button.down {
   text-decoration: none;
   display: inline-block;
   font-size: 1em;
-  border-radius: .5em
+  border-radius: .5em;
+  margin: .25em
+}
+
+th, td {
+	text-align: center;
+}
+
+.column {
+	float: left;
+	text-align:center;
+}
+
+.teamName {
+	width:90%;
+	margin: .25em 0 0 0;
+	border-radius: .5em;
+	padding: .5em;
+	border: .25em dashed black;
+	opacity: .5;
+}
+
+input[type=radio] {
+	position:fixed;
+	opacity:0;
+}
+
+input[type=radio]:checked + label {
+  font-weight: bold;
+  border: .25em solid black;
+  opacity: 1;
+}
+
+#opaque {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+    background-color: black;
+    opacity: 0.3;
+}
+
+#dialogBox {
+    position: fixed;
+    top: 5vh;
+    left: 35vw;
+    width: 30vw;
+    z-index: 1001;
+    display: none;
+	padding: .5em;
+    background-color: white;
+	border: .25em solid black;
 }
