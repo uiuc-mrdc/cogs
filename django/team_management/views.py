@@ -5,8 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from .models import ScoringType, Team, Game, GameParticipant
+from . import custom_config as cfg
 
 def home(request):
     return render(request, "team_management/Home.html", {})
