@@ -1,7 +1,7 @@
-from team_management.models import Game, Team, ScoringType
+from team_management.models import Game, Team, ScoringType, GameParticipant
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import GameSerializer, TeamSerializer, ScoringTypeSerializer
+from .serializers import GameSerializer, TeamSerializer, ScoringTypeSerializer, GameParticipantSerializer
 
 
 class GameViewSet(viewsets.ModelViewSet):
@@ -26,4 +26,12 @@ class ScoringTypeViewSet(viewsets.ModelViewSet):
     """
     queryset = ScoringType.objects.all()
     serializer_class = ScoringTypeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+	
+class GameParticipantViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows scoring types to be viewed or edited.
+    """
+    queryset = GameParticipant.objects.all()
+    serializer_class = GameParticipantSerializer
     permission_classes = [permissions.IsAuthenticated]
