@@ -4,46 +4,65 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 
+class School(models.Model):
+    name = models.CharField(max_length=70)
+    abbreviation = models.CharField(max_length=8, default="")
+    #logo?
+
 class Team(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    team_name = models.CharField(max_length=70)
-    school_name = models.CharField(max_length=500)
-    abbr = models.CharField(max_length=8, default="")
-    capt_name = models.CharField(max_length=25)
+    name = models.CharField(max_length=70)
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    abbreviation = models.CharField(max_length=8, default="")
     weigh_in = models.BooleanField(default=False)
     safety_check = models.BooleanField(default=False)
     #logo?
     def __str__(self):
-        return self.team_name
-
-class Phone(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    number = models.CharField(max_length=15)
-
-class ScoringType(models.Model): #Table for every way to score. #Autogenerates buttons on the judging page
-    name = models.CharField(max_length=40)
-    limit = models.IntegerField(default=0)
-    value = models.IntegerField()
-    extra_data = models.CharField(max_length=10) #used to set colors on the judging page for counters
-    input_style = models.CharField(max_length=15) #specifies how the judging screen should display it
-    def __str__(self):
         return self.name
 
-class Game(models.Model):
-    start_time = models.DateTimeField(default= timezone.now() + timedelta(days=399))
-    end_time = models.DateTimeField(default= timezone.now() + timedelta(days=400))
-    finished = models.BooleanField(default=False)
-    pause_time = models.DurationField(default=timedelta(minutes=0))
-    special_name = models.PositiveSmallIntegerField(default=0) #stores data for special games. ie. 1 means it is a semifinal #not used yet
+class TeamContact(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=15)
+
+
+
+class Match(models.Model):
+    special_name = models.CharField(max_length=50, default="") #stores data for special games. ie. 1 means it is a semifinal #not used yet
+    scheduled_start = models.DateTimeField(default = timezone.now() + timedelta(minutes=10)) #remove default value once we have a way to set this better
+
+class MatchStateChangeEvent(models.Model):
+    timestamp = models.DateTimeField(default = timezone.now)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    STARTED = 'STA'
+    PAUSED = 'PAU'
+    RESUMED = 'RES'
+    END = 'END'
+    FINALIZED = 'FIN'
+    EVENT_TYPE_CHOICES = [
+        (STARTED, 'Started'), #(stored value, human-readable)
+        (PAUSED, 'Paused'),
+        (RESUMED, 'Resumed'),
+        (END, 'End'),
+        (FINALIZED, 'Finalized'),
+    ]
+    event_type = models.CharField(
+        max_length=3,
+        choices=EVENT_TYPE_CHOICES,
+        default=STARTED,
+    )
+
+class ContenderPosition(models.Model):
+    name = models.CharField(max_length=20)
+    color = models.CharField(max_length=7)
     
-class GameParticipant(models.Model):
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+class Contender(models.Model):
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
-    score = models.IntegerField(default=0)
     color = models.CharField(max_length=2)
     def __str__(self):
         return ", ".join(["Game " + str(self.game.id), self.team.team_name])
-        
+'''  REDO SCORING CALCULATIONS
     def calculateScore(self): #updates score field #Unfinished
         sum = 0
         for scoring_type in ScoringType.objects.all(): #loops through each scoring_type
@@ -86,13 +105,45 @@ class GameParticipant(models.Model):
     switcher = {
         "Brew Potion":brewPotion,
     }
-    
-class Action(models.Model): #Table for every scoring action
-    scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
-    game_participant = models.ForeignKey(GameParticipant, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=timezone.now)
+'''
+
+class ScoringContext(models.Model):
     multiplier = models.FloatField(default=1)
-    value = models.IntegerField(default=0)
-    deleted = models.BooleanField(default=False)
+    name = models.CharField(max_length=20)
+    
+class ContenderContextChangeEvent(models.Model):
+    contender = models.ForeignKey(Contender, on_delete=models.CASCADE)
+    scoring_context = models.ForeignKey(ScoringContext, on_delete=models.CASCADE)
+    match_timestamp = models.DurationField(default=timedelta(minutes=0))
+    
+    ADD = 'ADD'
+    REMOVE = 'REM'
+    CHANGE_CHOICES = [
+        (ADD, 'Add'),
+        (REMOVE, 'Remove'),
+    ]
+    change = models.CharField(
+        max_length=3,
+        choices=CHANGE_CHOICES,
+        default=ADD,
+    )
+
+class ScoringTypeGroup(models.Model):
+    name = models.CharField(max_length=20)
+    
+class ScoringType(models.Model): #Table for every way to score. #Autogenerates buttons on the judging page
+    name = models.CharField(max_length=40)
+    limit = models.IntegerField(default=0)
+    score_change = models.IntegerField()
+    extra_data = models.CharField(max_length=10) #used to set colors on the judging page for counters
+    scoring_type_group = models.ForeignKey(ScoringTypeGroup, on_delete=models.CASCADE) #specifies how the judging screen should display it
+    def __str__(self):
+        return self.name
+    
+class ScoringEvent(models.Model): #Table for every scoring event
+    scoring_type = models.ForeignKey(ScoringType, on_delete=models.CASCADE)
+    Contender = models.ForeignKey(Contender, on_delete=models.CASCADE)
+    match_timestamp = models.DurationField(default=timedelta(minutes=0))
+    count = models.IntegerField(default=1)
     def __str__(self):
         return ", ".join(["Game " + str(self.game_participant.game_id), str(self.scoring_type), str(self.game_participant.team)])
