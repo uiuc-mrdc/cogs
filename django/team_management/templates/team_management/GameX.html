@@ -265,7 +265,7 @@ var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 var webSocket = new WebSocket(
 		ws_scheme + 
         '://' + window.location.host +
-        '/ws/game/{{ game.id }}');
+        '/ws/Match/{{ game.id }}');
 
     webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
         var data = JSON.parse(e.data);

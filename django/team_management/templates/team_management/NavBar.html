@@ -37,7 +37,7 @@
                           <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
 						<li class="nav-item">
-							{% url 'game_queue' as game_queue_url %}
+							{% url 'match_queue' as game_queue_url %}
                           <a class="nav-link {% if request.path == game_queue_url %}active{% endif %}" href="{{ game_queue_url }}">Game Queue</a>
                         </li>
 						<li class="nav-item">
