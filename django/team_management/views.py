@@ -48,9 +48,9 @@ def match_x(request, match_id): #game_id comes from the url
         }
     '''
     context={}
-    return render(request, 'team_management/GameX.html', context)
+    return render(request, 'team_management/Match_X.html', context)
     
-def scoreboard(request, game_id):
+def scoreboard(request, match_id):
     ''' Use API
     participant_list = GameParticipant.objects.filter(game=game_id).select_related('team')
     try:
@@ -68,7 +68,7 @@ def scoreboard(request, game_id):
     }
     '''
     context={}
-    return render(request, 'team_management/scoreboard.html', context)
+    return render(request, 'team_management/Scoreboard.html', context)
 
 def match_queue(request):
     ''' use API
@@ -116,7 +116,7 @@ IS THIS A VALID USE OF TEMPLATING?
     }
     '''
     context={}
-    return render(request, 'team_management/GameQueue.html', context)
+    return render(request, 'team_management/Match_Queue.html', context)
 
 ''' use API. All handled in the JS
 def postWeighIn(request):
@@ -170,7 +170,7 @@ def weigh_in(request):
     context={'teams_list':teams_list}
     '''
     context={}
-    return render(request, 'team_management/WeighIn.html', context)
+    return render(request, 'team_management/Weigh_In.html', context)
 
 ''' API
 def postPhone(request):
@@ -201,4 +201,4 @@ def add_phone(request):
     context={'teams_list':teams_list}
     '''
     context={}
-    return render(request, 'team_management/addPhone.html', context)
+    return render(request, 'team_management/Add_Phone.html', context)

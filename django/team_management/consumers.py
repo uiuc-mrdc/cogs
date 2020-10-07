@@ -14,12 +14,12 @@ class MatchConsumer(WebsocketConsumer):
     
     def connect(self):
         #adds itself to the group for its game_id
-        async_to_sync(self.channel_layer.group_add)(str(self.scope["url_route"]["kwargs"]["game_id"]), self.channel_name)
+        async_to_sync(self.channel_layer.group_add)(str(self.scope["url_route"]["kwargs"]["match_id"]), self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
         #removes itself from the group
-        async_to_sync(self.channel_layer.group_discard)(str(self.scope["url_route"]["kwargs"]["game_id"]), self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(str(self.scope["url_route"]["kwargs"]["match_id"]), self.channel_name)
         pass
 
     def receive(self, text_data): #Only JSON messages from the client pass through this
