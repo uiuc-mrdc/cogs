@@ -61,7 +61,7 @@ class Contender(models.Model):
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     color = models.CharField(max_length=2)
     def __str__(self):
-        return ", ".join(["Game " + str(self.game.id), self.team.team_name])
+        return ", ".join(["Match " + str(self.match.id), self.team.team_name])
 '''  REDO SCORING CALCULATIONS
     def calculateScore(self): #updates score field #Unfinished
         sum = 0

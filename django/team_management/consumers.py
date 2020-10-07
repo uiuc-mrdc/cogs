@@ -2,7 +2,6 @@ from channels.generic.websocket import WebsocketConsumer
 import json
 from django.utils import timezone
 from datetime import timedelta
-from .models import Action, ScoringType, Team, Game, GameParticipant
 import pytz
 from asgiref.sync import async_to_sync
 from django.db.models import CharField, TimeField, DateTimeField
@@ -11,7 +10,7 @@ from django.db.models.functions.datetime import TruncTime, TruncSecond
 
 from . import custom_config as cfg
 
-class GameConsumer(WebsocketConsumer):
+class MatchConsumer(WebsocketConsumer):
     
     def connect(self):
         #adds itself to the group for its game_id
@@ -27,7 +26,8 @@ class GameConsumer(WebsocketConsumer):
         dict_data = json.loads(text_data)
         func = self.switcher.get(dict_data['type']) #switcher is at the bottom
         return func(self, dict_data) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
-        
+''' Probably the only thing this websocket will be for is sending score updates and MatchStateChangeEvents to clients. And score updates will probably be sent directly from the Condtender subfunction
+Timer stuff with MatchStateChangeEvents will have to be majorly reworked.
     def addStandardAction(self, json_data):
         scoring_type = ScoringType.objects.get(pk=json_data['scoringType_id'])
         game_participant = GameParticipant.objects.get(pk=json_data['participant_id'])
@@ -207,8 +207,8 @@ class GameConsumer(WebsocketConsumer):
         'restartGame':groupRestartGame,
         'finalizeGame':groupFinalizeGame,
     }
-    
-class GameQueueConsumer(WebsocketConsumer):
+'''
+class MatchQueueConsumer(WebsocketConsumer):
     def connect(self):
         #adds itself to the group 'timer_only'
         async_to_sync(self.channel_layer.group_add)('timer_only', self.channel_name)
@@ -225,7 +225,7 @@ class GameQueueConsumer(WebsocketConsumer):
         dict_data = json.loads(text_data)
         func = self.switcher.get(dict_data['type']) #switcher is at the bottom
         return func(self, dict_data) #These two lines implement a sort of switch statement based on the type to differentiate between adding/deleting/etc.
-    
+''' If we want the Match Queue to be dynamically updated, we will do that here. Once again, timer stuff will need to be reworked.
     def StartGame(self, dict_data): #sends end_time and game_id #also used to restart the game after pausing
         self.send(text_data=json.dumps(dict_data))
 
@@ -274,5 +274,5 @@ class GameQueueConsumer(WebsocketConsumer):
         'newParticipant':groupNewParticipant,
         'newGame':groupNewGame,
     }
-    
+'''
     

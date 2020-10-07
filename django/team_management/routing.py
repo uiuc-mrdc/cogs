@@ -4,6 +4,6 @@ from django.conf.urls import url
 from . import consumers
 
 websocket_urlpatterns = [
-    path("ws/game/<int:game_id>", consumers.GameConsumer, name="gameConsumer"),
-    path("ws/gameQueue", consumers.GameQueueConsumer, name="gameQueueConsumer")
+    path("ws/Match/<int:Match_id>", consumers.MatchConsumer, name="MatchConsumer"),
+    path("ws/MatchQueue", consumers.MatchQueueConsumer, name="MatchQueueConsumer")
 ]

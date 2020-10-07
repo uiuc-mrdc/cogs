@@ -20,12 +20,12 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('GameQueue/', views.gameQueue, name='game_queue'),
-    path('games/<int:game_id>/', views.gameX, name='gameX'),
+    path('MatchQueue/', views.match_queue, name='match_queue'),
+    path('Match/<int:match_id>/', views.match_x, name='match_x'),
     path('scoreboard/<int:game_id>/', views.scoreboard, name='scoreboard'),
-    path('add_phone/', views.addPhone, name='add_phone'),
-    path('post_phone/', views.postPhone, name='post_phone'),
-    path('WeighIn/', views.weighIn, name='weigh_in'),
-    path('post_weigh_in/', views.postWeighIn, name='post_weigh_in'),
-    path('post_reset_weigh_in/', views.postResetWeighIn, name='post_reset_weigh_in'),
+    path('add_phone/', views.add_phone, name='add_phone'),
+    #path('post_phone/', views.postPhone, name='post_phone'),
+    path('WeighIn/', views.weigh_in, name='weigh_in'),
+    #path('post_weigh_in/', views.postWeighIn, name='post_weigh_in'),
+    #path('post_reset_weigh_in/', views.postResetWeighIn, name='post_reset_weigh_in'),
 ]
