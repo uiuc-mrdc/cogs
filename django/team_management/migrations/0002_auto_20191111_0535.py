@@ -3,7 +3,7 @@
 from django.db import migrations
 from django.utils import timezone
 
-from team_management.models import School, Team, ScoringTypeGroup, ScoringType
+from team_management.models import School, Team, ScoringTypeGroup, ScoringType, ScoringEvent
 
 def initializeDb(apps, schema_editor):
     counter_arrows = ScoringTypeGroup.objects.create(name="Text and Arrows")
@@ -41,7 +41,7 @@ def initializeDb(apps, schema_editor):
     from django.contrib.auth.models import Permission
     from django.contrib.contenttypes.models import ContentType
 
-    content_type = ContentType.objects.get_for_model(Game)
+    content_type = ContentType.objects.get_for_model(ScoringEvent)
     judge_perm = Permission.objects.create(
         codename='is_judge',
         name='is_judge',
