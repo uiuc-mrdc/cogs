@@ -16,6 +16,7 @@ class ScoringTypeSerializer(serializers.HyperlinkedModelSerializer):
 		
 class GameParticipantSerializer(serializers.ModelSerializer):
     team = TeamSerializer(read_only=True)
+    score = serializers.IntegerField(max_value=None, min_value=None, source='calculateScore', read_only=True)
     class Meta:
         model = GameParticipant
         fields = '__all__'
