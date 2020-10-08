@@ -5,10 +5,6 @@ from django.utils import timezone
 from team_management.models import ScoringType, Team, Game, GameParticipant
 
 def initializeDb(apps, schema_editor):
-    Team.objects.create(team_name="Lion", school_name="UIUC")
-    Team.objects.create(team_name="Phoenix", school_name="Valpo")
-    Team.objects.create(team_name="Hydra", school_name="IIT")
-    Team.objects.create(team_name="Unicorn", school_name="College of Dupage")
     ScoringType.objects.create(name="Green Dragon ball", limit=0, value=16, extra_data="#00FF00", input_style="Counter")
     ScoringType.objects.create(name="Blue Dragon ball", limit=0, value=16, extra_data="#0000FF", input_style="Counter")
     ScoringType.objects.create(name="Red Dragon ball", limit=0, value=12, extra_data="#FF0000", input_style="Counter")
@@ -30,13 +26,6 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Yellow Treasure ball", limit=0, value=2, extra_data="#FFFF00", input_style="Counter2")
     ScoringType.objects.create(name="Orange Treasure ball", limit=0, value=-3, extra_data="#FFA500", input_style="Counter2")
     ScoringType.objects.create(name="Pink Treasure ball", limit=0, value=-3, extra_data="#ffc0cb", input_style="Counter2")
-    
-    Game.objects.create()
-    
-    GameParticipant.objects.create(team = Team.objects.get(pk=1), game = Game.objects.get(pk=1), color="yellow")
-    GameParticipant.objects.create(team = Team.objects.get(pk=2), game = Game.objects.get(pk=1), color="red")
-    GameParticipant.objects.create(team = Team.objects.get(pk=3), game = Game.objects.get(pk=1), color="blue")
-    GameParticipant.objects.create(team = Team.objects.get(pk=4), game = Game.objects.get(pk=1), color="green")
     
     from django.contrib.auth.models import User
     superuser = User.objects.create_superuser(
