@@ -6,8 +6,10 @@ from django.contrib.auth.models import User
 
 class School(models.Model):
     name = models.CharField(max_length=70)
-    abbreviation = models.CharField(max_length=8, default="")
+    abbreviation = models.CharField(max_length=8, default="", blank=True)
     #logo?
+    def __str__(self):
+        return self.name
 
 class Team(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -22,7 +24,7 @@ class Team(models.Model):
 
 class TeamContact(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    email = models.EmailField()
+    email = models.EmailField(blank=True)
     phone_number = models.CharField(max_length=15)
 
 
@@ -30,6 +32,8 @@ class TeamContact(models.Model):
 class Match(models.Model):
     special_name = models.CharField(max_length=50, default="") #stores data for special games. ie. 1 means it is a semifinal #not used yet
     scheduled_start = models.DateTimeField(default = timezone.now() + timedelta(minutes=10)) #remove default value once we have a way to set this better
+    class Meta:
+        verbose_name_plural = "Matches"
 
 class MatchStateChangeEvent(models.Model):
     timestamp = models.DateTimeField(default = timezone.now)
@@ -55,11 +59,13 @@ class MatchStateChangeEvent(models.Model):
 class ContenderPosition(models.Model):
     name = models.CharField(max_length=20)
     color = models.CharField(max_length=7)
+    def __str__(self):
+        return self.name
     
 class Contender(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
-    color = models.CharField(max_length=2)
+    contender_position = models.ForeignKey(ContenderPosition, on_delete=models.CASCADE)
     def __str__(self):
         return ", ".join(["Match " + str(self.match.id), self.team.team_name])
 '''  REDO SCORING CALCULATIONS
@@ -110,6 +116,8 @@ class Contender(models.Model):
 class ScoringContext(models.Model):
     multiplier = models.FloatField(default=1)
     name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
     
 class ContenderContextChangeEvent(models.Model):
     contender = models.ForeignKey(Contender, on_delete=models.CASCADE)
@@ -130,6 +138,8 @@ class ContenderContextChangeEvent(models.Model):
 
 class ScoringTypeGroup(models.Model):
     name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
     
 class ScoringType(models.Model): #Table for every way to score. #Autogenerates buttons on the judging page
     name = models.CharField(max_length=40)
