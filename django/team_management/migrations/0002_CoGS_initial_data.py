@@ -51,7 +51,9 @@ def initializeDb(apps, schema_editor):
     judge.user_permissions.add(judge_perm)
     judge.save() #needs save for the permission
     
-    ''' idk how we want to refactor and handle the audience now. The main goal of their user is to have it show up as an option to adding phone numbers
+    ''' idk how we want to refactor and handle the audience now. The main goal of their user 
+    # was to have it show up as an option to adding phone numbers,
+    # but that had a lot of downstream consequences with it showing up elsewhere too
     audience = User.objects.create_user('Audience', 'test@test.com', 'password') #No permissions
     Team.objects.create(user=audience,  team_name='Audience', school_name='N/A', abbr='Audience', capt_name='N/A')
     '''
