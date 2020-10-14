@@ -31,6 +31,7 @@ def initializeDb(apps, schema_editor):
     ScoringType.objects.create(name="Orange Treasure ball", limit=0, score_change=-3, extra_data="#FFA500", scoring_type_group=counter_arrows_box)
     ScoringType.objects.create(name="Pink Treasure ball", limit=0, score_change=-3, extra_data="#ffc0cb", scoring_type_group=counter_arrows_box)
     
+
     from django.contrib.auth.models import User
     superuser = User.objects.create_superuser(
         username = "MRDC",
