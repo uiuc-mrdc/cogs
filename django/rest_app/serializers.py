@@ -1,30 +1,79 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from team_management.models import Game, Team, ScoringType, GameParticipant
+from team_management.models import School, Team, TeamContact, Match, MatchStateChangeEvent, ContenderPosition, Contender, ScoringContext, ContenderContextChangeEvent, ScoringTypeGroup, ScoringType, ScoringEvent
 
-
-		
 class TeamSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Team
-        fields = ['url', 'team_name', 'abbr', 'weigh_in', 'safety_check']
-		
+        fields = '__all__'
+
+class TeamContactSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = TeamContact
+        fields = '__all__'
+
+class SchoolSerializer(serializers.HyperlinkedModelSerializer):
+    team_set = TeamSerializer(many=True, read_only=True)
+    class Meta:
+        model = School
+        fields = '__all__'
+
+class ContenderSerializer(serializers.ModelSerializer):
+    team = TeamSerializer(read_only=True)
+    score = serializers.IntegerField(max_value=None, min_value=None, source='calculate_score', read_only=True)
+    class Meta:
+        model = Contender
+        fields = '__all__'
+
+class MatchSerializer(serializers.HyperlinkedModelSerializer):
+    #gameparticipant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='gameparticipant-detail') #we can redefine the name of this in models.py with 'related_name'
+    contenders = ContenderSerializer(many=True, read_only=True) #we can rename this in models.py with related_name
+    class Meta:
+        model = Match
+        fields = '__all__'
+        
+class MatchStateChangeEventSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = MatchStateChangeEvent
+        fields = '__all__'
+        
+class ContenderPositionSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ContenderPosition
+        fields = '__all__'
+
+class ContenderContextChangeEventSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ContenderContextChangeEvent
+        fields = '__all__'
+
+class ScoringContextSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ScoringContext
+        fields = '__all__'
+
+class ScoringTypeGroupSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ScoringTypeGroup
+        fields = '__all__'
+
 class ScoringTypeSerializer(serializers.HyperlinkedModelSerializer):
+    scoring_type_group = ScoringTypeGroupSerializer(read_only=True)
     class Meta:
         model = ScoringType
-        fields = ['url', 'name', 'value']
-		
-class GameParticipantSerializer(serializers.ModelSerializer):
-    team = TeamSerializer(read_only=True)
-    score = serializers.IntegerField(max_value=None, min_value=None, source='calculateScore', read_only=True)
-    class Meta:
-        model = GameParticipant
         fields = '__all__'
-		
-#Rename to Match
-class GameSerializer(serializers.HyperlinkedModelSerializer):
-    #gameparticipant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='gameparticipant-detail') #we can redefine the name of this in models.py with 'related_name'
-    gameparticipant_set = GameParticipantSerializer(many=True, read_only=True)
+
+class ScoringEventSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Game
-        fields = '__all__'#['url', 'start_time', 'end_time', 'finished', 'pause_time', 'gameparticipant_set']
+        model = ScoringEvent
+        fields = '__all__'
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ['url', 'username', 'email', 'groups']
+        
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['url', 'name']

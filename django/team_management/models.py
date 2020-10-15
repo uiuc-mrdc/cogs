@@ -63,13 +63,14 @@ class ContenderPosition(models.Model):
         return self.name
     
 class Contender(models.Model):
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='contenders')
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     contender_position = models.ForeignKey(ContenderPosition, on_delete=models.CASCADE)
     def __str__(self):
-        return ", ".join(["Match " + str(self.match.id), self.team.team_name])
-'''  REDO SCORING CALCULATIONS
-    def calculateScore(self): #updates score field #Unfinished
+        return ", ".join(["Match " + str(self.match.id), self.team.name])
+    def calculate_score(self): #updates score field #Unfinished
+        return 5
+'''  REDO SCORING CALCULATIONS        
         sum = 0
         for scoring_type in ScoringType.objects.all(): #loops through each scoring_type
             if scoring_type.value != 0:
