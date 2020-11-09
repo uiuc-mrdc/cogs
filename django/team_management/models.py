@@ -8,7 +8,7 @@ from django.core.validators import RegexValidator
 class School(models.Model):
     name = models.CharField(max_length=70)
     abbreviation = models.CharField(max_length=8, default="", blank=True)
-    #logo?
+    logo = models.ImageField(upload_to='schools')
     def __str__(self):
         return self.name
 
@@ -19,7 +19,7 @@ class Team(models.Model):
     abbreviation = models.CharField(max_length=8, default="", blank=True)
     weigh_in = models.BooleanField(default=False)
     safety_check = models.BooleanField(default=False)
-    #logo?
+    logo = models.ImageField(upload_to='teams')
     def __str__(self):
         return self.name
 

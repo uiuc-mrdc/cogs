@@ -150,8 +150,9 @@ STATICFILES_DIRS = (
 os.path.join(BASE_DIR, "static"),
 ("icons", os.path.join('static/icons')),
 ("custom_css", os.path.join('static/css')),
-
 )
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "static", "logos")
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
