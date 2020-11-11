@@ -5,6 +5,7 @@
 	{{ block.super }}
 	<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
     <link rel="stylesheet" href="{% static 'team_management/Match_Queue.css' %}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -105,29 +106,36 @@
 			<a href="{% url 'scoreboard' match_id=0 %}">Scoreboard</a>
 		</div>
 	</div>
+
+
+<!----------------------jQuery Game--------------------------------->
+
+	<div id="base_match" class="game" style="display:none">
+		<div id="base_timer" class="column" style="width:10%">6:00</div>
+
+		<div id="base_contender" class="column" style="width:20%">
+			<div class="teamName"> <!-- add class color#-->
+				<select style="width:90%" onchange="newParticipant(this)">
+					<option value=''></option>
+				</select>
+			</div>
+		</div>
+
+		<div class="column" style="width:10%">
+			{% if perms.team_management.is_judge %}
+				<a href="{% url 'match_x' match_id=0 %}">Judging</a>
+				<br>
+			{% endif %}
+			<a href="{% url 'scoreboard' match_id=0 %}">Scoreboard</a>
+		</div>
+	</div>
+	
 	
 <!--------------------------Completed Games----------------------------------->
 
 <h1 class="title">Completed Games</h1>
 <div id="CompletedGames">	
-	{% for participant_list in finished_games_list %}
-		<div id="{{ participant_list.0.game_id }}" class="game">
-			<div class="column" style="width:10%">0:00</div>
-			{% for participant in participant_list %}
-				<div class="column" style="width:{% widthratio 1 participant_list|length 79 %}%">
-					<div id="{{ participant.game_id }}_color{{ participant.color }}" class="teamName color{{ participant.color }}">{{ participant.team.team_name }} <span id="{{ participant.game_id }}_{{ participant.id }}" style="font-weight:bold">{{ participant.score }}</span></div>
-				</div>
-			{% endfor %}
-			
-			<div class="column" style="width:10%">
-				{% if perms.team_management.is_judge %}
-					<a href="{% url 'match_x' match_id=participant_list.0.game_id %}">Judging</a>
-					<br>
-				{% endif %}
-				<a href="{% url 'scoreboard' match_id=participant_list.0.game_id %}">Scoreboard</a>
-			</div>
-		</div>
-	{% endfor %}
+
 </div>
 {% endblock %}
 
@@ -138,6 +146,76 @@
 		alert("{{ message }}")
 	{% endfor %}
 {% endif %}
+
+function get_id_from_url(url){
+	let arr = url.split("/")
+	return arr[arr.length-2];
+}
+
+$(document).ready(function(){
+	$.get('/api/matches/', function(data){
+		for (var i=0; i<data.count; i++){
+			let match = build_match(data.results[i]);
+			$('#CompletedGames').append(match);
+			
+		}
+		
+		
+	});
+});
+
+function build_match(match){ //returns entire match DOM object
+	var match_div = document.createElement("div");
+	match.id = get_id_from_url(match.url);
+	console.log(match.id);
+	match_div.id = 'match'+match.id;
+	document.body.appendChild(match_div); //This makes it accessible to jQuery
+	
+	
+	
+	for (var i=0; i<match.contenders.length; i++){
+		let contender = document.getElementById('base_contender').cloneNode(true);
+		contender.id = match.contenders[i].id
+		contender.firstElementChild.id = match.id+ 'color' + i;
+		console.log('#'+match.id+ '_color' + i);
+		$('#'+match.id+ 'color' + i).addClass('color'+ match.contenders.contender_position);//.attr('style','background-color:'+ match.contenders.contender_position)
+		console.log(contender);
+		console.log(match_div);
+		$('#match'+match.id).append(contender);
+	}
+	return
+}
+
+/*
+			div_elem = document.getElementById(data["game_id"] + "_color" + data['color']);
+			div_elem.firstElementChild.remove();
+			div_elem.innerHTML = data['team_name'] + " ";
+			//Creates new span
+			span_elem = document.createElement('span');
+			span_elem.innerHTML = 0;
+			span_elem.id = data['game_id'] + "_" + data['participant_id'];
+			span_elem.style.fontWeight = 'bold';
+			div_elem.appendChild(span_elem)
+			break;
+		case 'clientNewGame':
+			newGame_elem = document.getElementById('emptyGame').cloneNode(true);
+			newGame_elem.id = data['game_id'];
+			for (var i=1; i<={{ empty_game|length }}; i++){
+				team_div_elem = newGame_elem.querySelector(".color" + i);
+				team_div_elem.id = data['game_id'] + '_color' + i;
+				team_div_elem.querySelector("select").setAttribute('data-game_id', data['game_id'])
+			}
+			for (var link of newGame_elem.querySelectorAll('a')){
+				text = link.getAttribute('href');
+				pos = text.indexOf('0');
+				newtext = text.slice(0,pos) + data['game_id'] + '/';
+				link.setAttribute('href', newtext);
+			}
+			
+			document.getElementById('UpcomingGames').appendChild(newGame_elem);
+
+*/
+
 
 var intervalKey = null;
 var betweenIntervalKey = null;
