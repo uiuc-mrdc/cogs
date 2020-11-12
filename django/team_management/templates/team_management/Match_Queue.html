@@ -151,23 +151,30 @@ function get_id_from_url(url){
 	let arr = url.split("/")
 	return arr[arr.length-2];
 }
-
+var contender_positions;
 $(document).ready(function(){
-	$.get('/api/teams/', function(data){
+	teams = $.get('/api/teams/', function(data){ 
+		//build select element based on Django permissions
+	});
 	
+	positions = $.get('/api/contender_positions/', function(data){
+		contender_positions = data.results;
 	});
-	$.get('/api/matches/', function(data){
-		for (var i=0; i<data.count; i++){
-			if (true){ //if completed - need logic
-				let match = build_match(data.results[i], 'upcoming');
-				$('#UpcomingGames').append(match);
-			} else if (true){ //upcoming
-			} else { //current
+	
+	matches = $.get('/api/matches/')
+	
+	Promise.all([teams, positions, matches]) //Set up both the teams and positions before building all the games (also get match data too)
+		.then(function(values) {
+			let data = values[2]
+			for (var i=0; i<data.count; i++){
+				if (true){ //if completed - need logic
+					let match = build_match(data.results[i], 'upcoming');
+					$('#UpcomingGames').append(match);
+				} else if (true){ //upcoming
+				} else { //current
+				}
 			}
-			
-		}
-		
-	});
+		},function(){alert('Failed to contact server')});
 });
 
 function build_match(match,queue){ //returns entire match DOM object
