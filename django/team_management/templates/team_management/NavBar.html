@@ -50,6 +50,16 @@
                           <a class="nav-link {% if request.path == weigh_in_url %}active{% endif %}" href="{{ weigh_in_url }}">Weigh In</a>
                         </li>
 						{% endif %}
+						{% if user.is_superuser %}
+						<li class="nav-item">
+							{% url 'admin:index' as admin_url %}
+                          <a class="nav-link" href="{{ admin_url }}">Admin</a>
+                        </li>
+						<li class="nav-item">
+							{% url 'api-root' as api_url %}
+                          <a class="nav-link" href="{{ api_url }}">API</a>
+                        </li>
+						{% endif %}
 					  </ul>
 					  <ul class="navbar-nav justify-content-end w-100" >
 						{% if user.is_authenticated %}
