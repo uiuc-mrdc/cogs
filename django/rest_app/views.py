@@ -1,10 +1,33 @@
 from team_management.models import School, Team, TeamContact, Match, MatchStateChangeEvent, ContenderPosition, Contender, ScoringContext, ContenderContextChangeEvent, ScoringTypeGroup, ScoringType, ScoringEvent
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework import permissions
 import rest_app.serializers as serializers
+from rest_framework.response import Response
+from rest_framework import status
 
 
+class AvailableTeamsList(APIView): #Used by Match_Queue.html
+	"""
+	Lists Teams a user has permission to queue up for a Match
+	"""
+	def get(self, request, format=None):
+		print(request.user.has_perm('team_management.can_queue_themselves'))
+		print(request.user)
+		if request.user.has_perm('team_management.can_queue_all_teams'):
+			teams = Team.objects.all()
+			serializer = serializers.TeamSerializer(teams, many=True, context={'request': request})
+			return Response(serializer.data)
+		elif request.user.has_perm('team_management.can_queue_themselves'):
+			team = request.user.team
+			serializer = serializers.TeamSerializer(team, context={'request': request})
+			return Response(serializer.data)
+		else:
+			print('forbidden')
+			return Response(status=status.HTTP_403_FORBIDDEN)
+	
+	
 class TeamViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Teams to be viewed or edited.

@@ -8,7 +8,7 @@ from django.core.validators import RegexValidator
 class School(models.Model):
     name = models.CharField(max_length=70)
     abbreviation = models.CharField(max_length=8, default="", blank=True)
-    logo = models.ImageField(upload_to='schools')
+    logo = models.ImageField(upload_to='schools', blank=True)
     def __str__(self):
         return self.name
 
@@ -19,15 +19,15 @@ class Team(models.Model):
     abbreviation = models.CharField(max_length=8, default="", blank=True)
     weigh_in = models.BooleanField(default=False)
     safety_check = models.BooleanField(default=False)
-    logo = models.ImageField(upload_to='teams')
+    logo = models.ImageField(upload_to='teams', blank=True)
     def __str__(self):
         return self.name
 
 class TeamContact(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     email = models.EmailField(blank=True)
-	#regex source: Brooke's comment on https://stackoverflow.com/questions/123559/how-to-validate-phone-numbers-using-regex
-	#We may want to update this to match whatever texting service we use, or to be more strict
+    #regex source: Brooke's comment on https://stackoverflow.com/questions/123559/how-to-validate-phone-numbers-using-regex
+    #We may want to update this to match whatever texting service we use, or to be more strict
     phone_number = models.CharField(max_length=15, blank=True, validators=[RegexValidator(regex='(?:(?:(\s*\(?([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\)?\s*(?:[.-]\s*)?)([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})')])
 
 class Match(models.Model):
@@ -69,6 +69,11 @@ class Contender(models.Model):
     contender_position = models.ForeignKey(ContenderPosition, on_delete=models.CASCADE)
     def __str__(self):
         return ", ".join(["Match " + str(self.match.id), self.team.name])
+    class Meta:
+        permissions = (
+            ('can_queue_themselves', 'User can queue their team'),
+            ('can_queue_all_teams', 'User can queue all teams')
+        )
     def calculate_score(self): #updates score field #Unfinished
         return 5
 '''  REDO SCORING CALCULATIONS        
