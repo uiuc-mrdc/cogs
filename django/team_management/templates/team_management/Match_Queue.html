@@ -152,36 +152,41 @@ function get_id_from_url(url){
 	return arr[arr.length-2];
 }
 
+async function* paginated_get(url) {
+	let next = url;
+	while (next){
+		const response = await $.get(next);
+		yield* response.results;
+		next = response.next;
+	}
+}
 
-var contender_positions;
+let contender_positions = [];
+
+async function build_teams_selector(){
+	let option_string;
+	for await (const team of paginated_get('/api/available_teams/')){
+		option_string += '<option value="' + get_id_from_url(team.url) + '">' + team.name + '</option>';
+	}
+	$('#base_team_selector').append(option_string);
+}
+
+async function prep_positions_arr(){
+	for await (let position of paginated_get('/api/contender_positions/')){
+		contender_positions.push(position);
+	}
+}
 
 $(document).ready(async function(){
-	let teams = $.get('/api/available_teams/').then(async function(data){
-		//build select element based on Django permissions
-		console.log(data);
-		let option_string;
-		console.log(data.count);
-		for (let i=0; i<data.count; i++){
-			console.log(i);
-			option_string += '<option value="' + get_id_from_url(data.results[i].url) + '">' + data.results[i].name + '</option>';
-		}
-		$('#base_team_selector').append(option_string);
-	});
-	
-	let positions = $.get('/api/contender_positions/', function(data){
-		contender_positions = data.results;
-	});
-	let matches = $.get('/api/matches/');
+	teams = build_teams_selector();
 
-	let values = await Promise.all([teams, positions, matches]); //Set up both the teams and positions before building all the games (also get match data too)
+	positions = prep_positions_arr();
 	
-	//Build matches
-	let match_data = values[2];
-	console.log(match_data);
-	for (var i=0; i<match_data.count; i++){
+	for await (let match_data of paginated_get('/api/matches/')){
+		await Promise.all([teams, positions]);//Set up both the teams and positions before building all the matches (also get match data too)
 		if (true){ //if completed - need logic
-			let match = build_match(match_data.results[i], 'upcoming');
-			$('#UpcomingGames').append(match);
+			let match_elem = build_match(match_data, 'upcoming');
+			$('#UpcomingGames').append(match_elem);
 		} else if (true){ //upcoming
 		} else { //current
 		}
@@ -193,8 +198,8 @@ function build_match(match,queue){ //returns entire match DOM object
 	$match_div = $('<div></div>', {'id':match.id});
 	
 	$('#base_timer').clone().appendTo($match_div);
-	
-	for (var i=0; i<4; i++){
+	let remaining_positions = contender_positions;
+	for (var i=0; i<4; i++){ //This 4 should be retrieved from the API somehow if we want to support different #s of teams in a match
 		if (match.contenders[i] == null && (queue === 'completed' || queue === 'current')) {//no contender, build empty game if necessary
 			console.log('i = ' + i)
 			break;
@@ -206,8 +211,8 @@ function build_match(match,queue){ //returns entire match DOM object
 			contender.id = match.id + '-' + i;
 		}
 		document.body.appendChild(contender);
-		$('#'+ contender.id).children().first()
-			.attr('style', 'background-color:gray');
+
+		
 		if (match.contenders[i] != null) {
 			let score_span = $('<span></span>').text(match.contenders[i].score).attr('style', "font-weight:bold")
 			$('#'+ contender.id).children().first()
@@ -215,6 +220,18 @@ function build_match(match,queue){ //returns entire match DOM object
 				.empty()
 				.text(match.contenders[i].team.name + " - ")
 				.append(score_span);
+			for (let j=0; ;j++){ //Removes the used contender position from remaining_positions
+				if (remaining_positions[j].url === match.contenders[i].contender_position.url){
+					remaining_positions.splice(j,1);
+					break;
+				}
+			}
+		}
+		else {
+			$('#'+ contender.id).children().first()
+				.attr('style', 'background-color:'+ remaining_positions[0].color)
+				.attr('data-contender_position', get_id_from_url(remaining_positions[0].url));
+			remaining_positions.shift()
 		}
 		$($match_div).append(contender);
 	}
