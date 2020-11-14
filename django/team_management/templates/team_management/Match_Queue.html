@@ -73,7 +73,7 @@
 	{% endfor %}
 </div>
 {% if perms.team_management.is_judge %}
-	<button id="newGameButton" onclick="addNewGame()">Add New Game</button>
+	<button id="newGameButton" onclick="add_new_blank_match()">Add New Match</button>
 {% endif %}
 
 <!----------------------Hidden Blank Game--------------------------------->
@@ -152,6 +152,25 @@ function get_id_from_url(url){
 	return arr[arr.length-2];
 }
 
+async function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+getCookie('csrftoken').then((csrftoken) => {
+	$.ajaxSetup({ headers: { 'X-CSRFToken': csrftoken } })
+});
+
 async function* paginated_get(url) {
 	let next = url;
 	while (next){
@@ -198,7 +217,7 @@ function build_match(match,queue){ //returns entire match DOM object
 	$match_div = $('<div></div>', {'id':match.id});
 	
 	$('#base_timer').clone().appendTo($match_div);
-	let remaining_positions = contender_positions;
+	let remaining_positions = contender_positions.slice();
 	for (var i=0; i<4; i++){ //This 4 should be retrieved from the API somehow if we want to support different #s of teams in a match
 		if (match.contenders[i] == null && (queue === 'completed' || queue === 'current')) {//no contender, build empty game if necessary
 			console.log('i = ' + i)
@@ -220,12 +239,8 @@ function build_match(match,queue){ //returns entire match DOM object
 				.empty()
 				.text(match.contenders[i].team.name + " - ")
 				.append(score_span);
-			for (let j=0; ;j++){ //Removes the used contender position from remaining_positions
-				if (remaining_positions[j].url === match.contenders[i].contender_position.url){
-					remaining_positions.splice(j,1);
-					break;
-				}
-			}
+			const index = remaining_positions.findIndex((position) => {return position.url === match.contenders[i].contender_position.url});
+			remaining_positions.splice(index,1);
 		}
 		else {
 			$('#'+ contender.id).children().first()
@@ -235,7 +250,6 @@ function build_match(match,queue){ //returns entire match DOM object
 		}
 		$($match_div).append(contender);
 	}
-	
 	$('#base_match_links').clone().appendTo($match_div);
 	return $match_div;
 }
@@ -327,10 +341,8 @@ function newParticipant(select_elem, color_id){
 	}
 }
 
-function addNewGame(){
-	webSocket.send(JSON.stringify({
-		'type':'newGame',
-	}));
+async function add_new_blank_match(){
+	await $.post('/api/matches/');
 }
 
 //sets up websocket and handles incoming data
@@ -387,7 +399,10 @@ webSocket.onmessage = function(e) { //Function that receives all incoming websoc
 			span_elem.style.fontWeight = 'bold';
 			div_elem.appendChild(span_elem)
 			break;
-		case 'clientNewGame':
+		case 'new_blank_match':
+			let match_elem = build_match(data, 'upcoming');
+			$('#UpcomingGames').append(match_elem);
+			/*
 			newGame_elem = document.getElementById('emptyGame').cloneNode(true);
 			newGame_elem.id = data['game_id'];
 			for (var i=1; i<={{ empty_game|length }}; i++){
@@ -403,6 +418,7 @@ webSocket.onmessage = function(e) { //Function that receives all incoming websoc
 			}
 			
 			document.getElementById('UpcomingGames').appendChild(newGame_elem);
+			*/
 			break;
 	}
 };

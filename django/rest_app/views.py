@@ -7,6 +7,8 @@ import rest_app.serializers as serializers
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 class AvailableTeamsList(generics.ListAPIView): #Used by Match_Queue.html
 	"""
@@ -30,7 +32,7 @@ class TeamViewSet(viewsets.ModelViewSet):
     """
     queryset = Team.objects.all()
     serializer_class = serializers.TeamSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class TeamContactViewSet(viewsets.ModelViewSet):
     """
@@ -38,7 +40,7 @@ class TeamContactViewSet(viewsets.ModelViewSet):
     """
     queryset = TeamContact.objects.all()
     serializer_class = serializers.TeamContactSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     
 class SchoolViewSet(viewsets.ModelViewSet):
     """
@@ -46,7 +48,7 @@ class SchoolViewSet(viewsets.ModelViewSet):
     """
     queryset = School.objects.all()
     serializer_class = serializers.SchoolSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     
 class ContenderViewSet(viewsets.ModelViewSet):
     """
@@ -54,7 +56,7 @@ class ContenderViewSet(viewsets.ModelViewSet):
     """
     queryset = Contender.objects.all()
     serializer_class = serializers.ContenderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class MatchViewSet(viewsets.ModelViewSet):
     """
@@ -62,7 +64,16 @@ class MatchViewSet(viewsets.ModelViewSet):
     """
     queryset = Match.objects.all()
     serializer_class = serializers.MatchSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+
+    def create(self, *args, **kwargs):
+        response = super().create(*args, **kwargs)
+        response.data['type'] = 'new_blank_match'
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'match_queue',
+            response.data)
+        return response #mimics the normal create method after sending the websocket message
 
 class MatchStateChangeEventViewSet(viewsets.ModelViewSet):
     """
@@ -70,7 +81,7 @@ class MatchStateChangeEventViewSet(viewsets.ModelViewSet):
     """
     queryset = MatchStateChangeEvent.objects.all()
     serializer_class = serializers.MatchStateChangeEventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class ContenderPositionViewSet(viewsets.ModelViewSet):
     """
@@ -78,7 +89,7 @@ class ContenderPositionViewSet(viewsets.ModelViewSet):
     """
     queryset = ContenderPosition.objects.all()
     serializer_class = serializers.ContenderPositionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class ContenderContextChangeEventViewSet(viewsets.ModelViewSet):
     """
@@ -86,7 +97,7 @@ class ContenderContextChangeEventViewSet(viewsets.ModelViewSet):
     """
     queryset = ContenderContextChangeEvent.objects.all()
     serializer_class = serializers.ContenderContextChangeEventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class ScoringContextViewSet(viewsets.ModelViewSet):
     """
@@ -94,7 +105,7 @@ class ScoringContextViewSet(viewsets.ModelViewSet):
     """
     queryset = ScoringContext.objects.all()
     serializer_class = serializers.ScoringContextSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class ScoringTypeGroupViewSet(viewsets.ModelViewSet):
     """
@@ -102,7 +113,7 @@ class ScoringTypeGroupViewSet(viewsets.ModelViewSet):
     """
     queryset = ScoringTypeGroup.objects.all()
     serializer_class = serializers.ScoringTypeGroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 class ScoringTypeViewSet(viewsets.ModelViewSet):
     """
@@ -110,7 +121,7 @@ class ScoringTypeViewSet(viewsets.ModelViewSet):
     """
     queryset = ScoringType.objects.all()
     serializer_class = serializers.ScoringTypeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 	
 class ScoringEventViewSet(viewsets.ModelViewSet):
     """
@@ -118,7 +129,7 @@ class ScoringEventViewSet(viewsets.ModelViewSet):
     """
     queryset = ScoringEvent.objects.all()
     serializer_class = serializers.ScoringEventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -126,7 +137,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = serializers.UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -135,4 +146,4 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = serializers.GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
