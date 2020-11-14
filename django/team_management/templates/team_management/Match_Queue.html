@@ -115,8 +115,8 @@
 
 		<div id="base_contender" class="column" style="width:20%">
 			<div class="teamName"> <!-- add class color#-->
-				<select style="width:90%" onchange="newParticipant(this)">
-					<option value=''></option>
+				<select id="base_team_selector" style="width:90%" onchange="newParticipant(this)">
+					<option value=""></option>
 				</select>
 			</div>
 		</div>
@@ -151,30 +151,41 @@ function get_id_from_url(url){
 	let arr = url.split("/")
 	return arr[arr.length-2];
 }
+
+
 var contender_positions;
-$(document).ready(function(){
-	teams = $.get('/api/teams/', function(data){ 
+
+$(document).ready(async function(){
+	let teams = $.get('/api/available_teams/').then(async function(data){
 		//build select element based on Django permissions
+		console.log(data);
+		let option_string;
+		console.log(data.count);
+		for (let i=0; i<data.count; i++){
+			console.log(i);
+			option_string += '<option value="' + get_id_from_url(data.results[i].url) + '">' + data.results[i].name + '</option>';
+		}
+		$('#base_team_selector').append(option_string);
 	});
 	
-	positions = $.get('/api/contender_positions/', function(data){
+	let positions = $.get('/api/contender_positions/', function(data){
 		contender_positions = data.results;
 	});
+	let matches = $.get('/api/matches/');
+
+	let values = await Promise.all([teams, positions, matches]); //Set up both the teams and positions before building all the games (also get match data too)
 	
-	matches = $.get('/api/matches/')
-	
-	Promise.all([teams, positions, matches]) //Set up both the teams and positions before building all the games (also get match data too)
-		.then(function(values) {
-			let data = values[2]
-			for (var i=0; i<data.count; i++){
-				if (true){ //if completed - need logic
-					let match = build_match(data.results[i], 'upcoming');
-					$('#UpcomingGames').append(match);
-				} else if (true){ //upcoming
-				} else { //current
-				}
-			}
-		},function(){alert('Failed to contact server')});
+	//Build matches
+	let match_data = values[2];
+	console.log(match_data);
+	for (var i=0; i<match_data.count; i++){
+		if (true){ //if completed - need logic
+			let match = build_match(match_data.results[i], 'upcoming');
+			$('#UpcomingGames').append(match);
+		} else if (true){ //upcoming
+		} else { //current
+		}
+	}
 });
 
 function build_match(match,queue){ //returns entire match DOM object
