@@ -6,26 +6,22 @@ from rest_framework import permissions
 import rest_app.serializers as serializers
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 
-
-class AvailableTeamsList(APIView): #Used by Match_Queue.html
+class AvailableTeamsList(generics.ListAPIView): #Used by Match_Queue.html
 	"""
 	Lists Teams a user has permission to queue up for a Match
 	"""
-	def get(self, request, format=None):
-		print(request.user.has_perm('team_management.can_queue_themselves'))
-		print(request.user)
-		if request.user.has_perm('team_management.can_queue_all_teams'):
-			teams = Team.objects.all()
-			serializer = serializers.TeamSerializer(teams, many=True, context={'request': request})
-			return Response(serializer.data)
-		elif request.user.has_perm('team_management.can_queue_themselves'):
-			team = request.user.team
-			serializer = serializers.TeamSerializer(team, context={'request': request})
-			return Response(serializer.data)
+	serializer_class = serializers.TeamSerializer
+	def get_queryset(self):
+		print(self.request.user.has_perm('team_management.can_queue_themselves'))
+		print(self.request.user)
+		if self.request.user.has_perm('team_management.can_queue_all_teams'):
+			return Team.objects.all()
+		elif self.request.user.has_perm('team_management.can_queue_themselves'):
+			return [self.request.user.team] #this model instance must act like a queryset, not a single instance
 		else:
-			print('forbidden')
-			return Response(status=status.HTTP_403_FORBIDDEN)
+			return []
 	
 	
 class TeamViewSet(viewsets.ModelViewSet):
