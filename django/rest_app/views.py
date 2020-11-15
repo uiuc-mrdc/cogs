@@ -61,7 +61,7 @@ class ContenderViewSet(viewsets.ModelViewSet):
 
     #custom action to use a non-nested version of the serializer, so we can POST with only the primary keys
     #Note that it also responds with the entire match so the client can rebuild the entire match
-    @action(detail=False, methods=['post'], serializer_class=serializers.ContenderSerializer)
+    @action(detail=False, methods=['post'], serializer_class=serializers.NonNestedContenderSerializer)
     def new_contender(self, request, pk=None):
         serializer = serializers.NonNestedContenderSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():
