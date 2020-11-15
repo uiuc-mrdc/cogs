@@ -33,7 +33,7 @@ class NonNestedContenderSerializer(serializers.ModelSerializer):
         print(self.context)
         if not self.context['request'].user.has_perm('team_management.can_queue_all_teams'):
             if self.context['request'].user != value.user:
-                raise serializers.ValidationError("You can only queue your own team.")
+                raise serializers.ValidationError("You can only queue your own team. \n\nPlease stop messing around.")
         return value
 
 #Used for GET requests
