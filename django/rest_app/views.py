@@ -60,6 +60,7 @@ class ContenderViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
     #custom action to use a non-nested version of the serializer, so we can POST with only the primary keys
+    #Note that it also responds with the entire match so the client can rebuild the entire match
     @action(detail=False, methods=['post'], serializer_class=serializers.ContenderSerializer)
     def new_contender(self, request, pk=None):
         serializer = serializers.NonNestedContenderSerializer(data=request.data)
@@ -73,8 +74,7 @@ class ContenderViewSet(viewsets.ModelViewSet):
                 response_data)
             return Response(response_data)
         else:
-            return Response(serializer.errors)
-        #contender = Contender.objects.create(team = Team.objects.get(request['team']),match = Match.objects.get(request['match']), contender_position= ContenderPosition.objects.get(request['contender_position']))
+            return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
 
 class MatchViewSet(viewsets.ModelViewSet):
     """

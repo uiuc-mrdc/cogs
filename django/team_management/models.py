@@ -4,6 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 
 class School(models.Model):
     name = models.CharField(max_length=70)
@@ -62,10 +63,14 @@ class ContenderPosition(models.Model):
     color = models.CharField(max_length=7)
     def __str__(self):
         return self.name
-    
+
+def validate_weigh_in_and_safety_check(team):
+    if not (team.weigh_in and team.safety_check):
+        raise ValidationError(team.name + ' must complete their weigh in and safety check (each day) before competing.')
+
 class Contender(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='contenders')
-    team = models.ForeignKey(Team, on_delete=models.PROTECT)
+    team = models.ForeignKey(Team, on_delete=models.PROTECT, validators=[validate_weigh_in_and_safety_check])
     contender_position = models.ForeignKey(ContenderPosition, on_delete=models.CASCADE)
     def __str__(self):
         return ", ".join(["Match " + str(self.match.id), self.team.name])

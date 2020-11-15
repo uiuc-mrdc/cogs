@@ -187,7 +187,7 @@ async function build_teams_selector(){
 	for await (const team of paginated_get('/api/available_teams/')){
 		option_string += '<option value="' + get_id_from_url(team.url) + '">' + team.name + '</option>';
 	}
-	$('#base_team_selector').append(option_string);
+	$('#base_team_selector').append(option_string); //Only hit the DOM once
 }
 
 async function prep_positions_arr(){
@@ -215,8 +215,9 @@ $(document).ready(async function(){
 function build_match(match,queue){ //returns entire match DOM object
 	match.id = 'match' + get_id_from_url(match.url);
 	$match_div = $('<div></div>', {'id':match.id, 'class':'game'});
-	
-	$('#base_timer').clone().appendTo($match_div);
+	//copy in timer
+	$('#base_timer').clone().attr('id','timer'+ match.id.slice(5)).appendTo($match_div);
+	//Build contenders
 	let remaining_positions = contender_positions.slice();
 	for (var i=0; i<4; i++){ //This 4 should be retrieved from the API somehow if we want to support different #s of teams in a match
 		if (match.contenders[i] == null && (queue === 'completed' || queue === 'current')) {//no contender, build empty game if necessary
@@ -231,7 +232,6 @@ function build_match(match,queue){ //returns entire match DOM object
 		}
 		document.body.appendChild(contender);
 
-		
 		if (match.contenders[i] != null) {
 			let score_span = $('<span></span>').text(match.contenders[i].score).attr('style', "font-weight:bold")
 			$('#'+ contender.id).children().first()
@@ -245,12 +245,16 @@ function build_match(match,queue){ //returns entire match DOM object
 		else {
 			$('#'+ contender.id).children().first()
 				.attr('style', 'background-color:'+ remaining_positions[0].color)
-				.attr('data-contender_position', get_id_from_url(remaining_positions[0].url));
+				.attr('data-contender_position', get_id_from_url(remaining_positions[0].url))
+				.children().first().removeAttr('id');
 			remaining_positions.shift()
 		}
 		$($match_div).append(contender);
 	}
-	$('#base_match_links').clone().appendTo($match_div);
+	//copy in links and update urls
+	$('#base_match_links').clone()
+		.attr('id','links'+ match.id.slice(5))
+		.appendTo($match_div);
 	return $match_div;
 }
 
@@ -342,14 +346,14 @@ function newParticipant(select_elem, color_id){
 }
 
 async function new_contender(select_elem){
-	console.log(select_elem.parentNode.parentNode.id.slice(-1));
-	console.log(select_elem.parentNode.getAttribute('data-contender_position'));
 	let data = {
 		'team': select_elem.value,
 		'match': select_elem.parentNode.parentNode.id.slice(5,-2), //Breaks if more than 10 teams in a match due to 2 digit indicies
 		'contender_position': select_elem.parentNode.getAttribute('data-contender_position'),
 	}
-	let response = await $.post('/api/contenders/new_contender/',data=data);
+
+	let response = $.post('/api/contenders/new_contender/',data=data);
+	response.fail(function(jqXHR,textStatus, errorThrown){alert(response.responseJSON.team[0])});
 }
 
 async function add_new_blank_match(){
