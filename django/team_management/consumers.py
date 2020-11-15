@@ -227,3 +227,6 @@ class MatchQueueConsumer(WebsocketConsumer):
     #called rest_app.views.MatchViewSet.create()
     def new_blank_match(self, dict_data): #automatically called because dict_data['type'] is new_blank_match
         self.send(text_data=json.dumps(dict_data))
+
+    def new_contender(self, dict_data): #automatically called because dict_data['type'] is new_contender
+        self.send(text_data=json.dumps(dict_data))

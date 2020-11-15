@@ -23,17 +23,24 @@ class ContenderPositionSerializer(serializers.HyperlinkedModelSerializer):
         model = ContenderPosition
         fields = '__all__'
 
+#Used for POST only, so we don't have to POST all of the nested fields
+class NonNestedContenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contender
+        fields = '__all__'
+
+#Used for GET requests
 class ContenderSerializer(serializers.HyperlinkedModelSerializer):
-    team = TeamSerializer(read_only=True)
+    team = TeamSerializer()
     score = serializers.IntegerField(max_value=None, min_value=None, source='calculate_score', read_only=True)
-    contender_position = ContenderPositionSerializer(read_only=True)
+    contender_position = ContenderPositionSerializer()
     class Meta:
         model = Contender
         fields = '__all__'
 
 class MatchSerializer(serializers.HyperlinkedModelSerializer):
     #contenders = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='contender-detail') #This is the same as below in end result
-    contenders = ContenderSerializer(many=True, read_only=True) #we can rename this in models.py with related_name
+    contenders = ContenderSerializer(read_only=True, many=True) #we can rename this in models.py with related_name
     class Meta:
         model = Match
         fields = '__all__'

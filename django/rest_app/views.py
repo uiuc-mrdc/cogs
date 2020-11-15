@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework import generics
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from rest_framework.decorators import action
 
 class AvailableTeamsList(generics.ListAPIView): #Used by Match_Queue.html
 	"""
@@ -49,7 +50,7 @@ class SchoolViewSet(viewsets.ModelViewSet):
     queryset = School.objects.all()
     serializer_class = serializers.SchoolSerializer
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
-    
+
 class ContenderViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Contenders to be viewed or edited.
@@ -57,6 +58,23 @@ class ContenderViewSet(viewsets.ModelViewSet):
     queryset = Contender.objects.all()
     serializer_class = serializers.ContenderSerializer
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+
+    #custom action to use a non-nested version of the serializer, so we can POST with only the primary keys
+    @action(detail=False, methods=['post'], serializer_class=serializers.ContenderSerializer)
+    def new_contender(self, request, pk=None):
+        serializer = serializers.NonNestedContenderSerializer(data=request.data)
+        if serializer.is_valid():
+            contender = serializer.save()
+            response_data = serializers.MatchSerializer(contender.match, context={'request':request}).data
+            response_data['type'] = 'new_contender'
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                'match_queue',
+                response_data)
+            return Response(response_data)
+        else:
+            return Response(serializer.errors)
+        #contender = Contender.objects.create(team = Team.objects.get(request['team']),match = Match.objects.get(request['match']), contender_position= ContenderPosition.objects.get(request['contender_position']))
 
 class MatchViewSet(viewsets.ModelViewSet):
     """
@@ -66,6 +84,7 @@ class MatchViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.MatchSerializer
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
+    #mimics the normal create method and sends a websocket message
     def create(self, *args, **kwargs):
         response = super().create(*args, **kwargs)
         response.data['type'] = 'new_blank_match'
@@ -73,7 +92,7 @@ class MatchViewSet(viewsets.ModelViewSet):
         async_to_sync(channel_layer.group_send)(
             'match_queue',
             response.data)
-        return response #mimics the normal create method after sending the websocket message
+        return response 
 
 class MatchStateChangeEventViewSet(viewsets.ModelViewSet):
     """

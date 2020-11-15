@@ -115,7 +115,7 @@
 
 		<div id="base_contender" class="column" style="width:20%">
 			<div class="teamName"> <!-- add class color#-->
-				<select id="base_team_selector" style="width:90%" onchange="newParticipant(this)">
+				<select id="base_team_selector" style="width:90%" onchange="new_contender(this)">
 					<option value=""></option>
 				</select>
 			</div>
@@ -341,6 +341,17 @@ function newParticipant(select_elem, color_id){
 	}
 }
 
+async function new_contender(select_elem){
+	console.log(select_elem.parentNode.parentNode.id.slice(-1));
+	console.log(select_elem.parentNode.getAttribute('data-contender_position'));
+	let data = {
+		'team': select_elem.value,
+		'match': select_elem.parentNode.parentNode.id.slice(5,-2), //Breaks if more than 10 teams in a match due to 2 digit indicies
+		'contender_position': select_elem.parentNode.getAttribute('data-contender_position'),
+	}
+	let response = await $.post('/api/contenders/new_contender/',data=data);
+}
+
 async function add_new_blank_match(){
 	await $.post('/api/matches/');
 }
@@ -383,42 +394,14 @@ webSocket.onmessage = function(e) { //Function that receives all incoming websoc
 		case 'UpdateScore':
 			document.getElementById(data['game_id'] + "_" + data['participant_id']).innerHTML = data['score'];
 			break;
-		case 'clientNewParticipant':
-			/*
-			$('#matchid')
+		case 'new_contender':
+			$('#match'+ get_id_from_url(data.url))
 				.empty()
-				.html(build_match(data,'upcoming').innerHTML);
-			*/
-			div_elem = document.getElementById(data["game_id"] + "_color" + data['color']);
-			div_elem.firstElementChild.remove();
-			div_elem.innerHTML = data['team_name'] + " ";
-			//Creates new span
-			span_elem = document.createElement('span');
-			span_elem.innerHTML = 0;
-			span_elem.id = data['game_id'] + "_" + data['participant_id'];
-			span_elem.style.fontWeight = 'bold';
-			div_elem.appendChild(span_elem)
+				.html(build_match(data,'upcoming').html());
 			break;
 		case 'new_blank_match':
 			let match_elem = build_match(data, 'upcoming');
 			$('#UpcomingGames').append(match_elem);
-			/*
-			newGame_elem = document.getElementById('emptyGame').cloneNode(true);
-			newGame_elem.id = data['game_id'];
-			for (var i=1; i<={{ empty_game|length }}; i++){
-				team_div_elem = newGame_elem.querySelector(".color" + i);
-				team_div_elem.id = data['game_id'] + '_color' + i;
-				team_div_elem.querySelector("select").setAttribute('data-game_id', data['game_id'])
-			}
-			for (var link of newGame_elem.querySelectorAll('a')){
-				text = link.getAttribute('href');
-				pos = text.indexOf('0');
-				newtext = text.slice(0,pos) + data['game_id'] + '/';
-				link.setAttribute('href', newtext);
-			}
-			
-			document.getElementById('UpcomingGames').appendChild(newGame_elem);
-			*/
 			break;
 	}
 };
