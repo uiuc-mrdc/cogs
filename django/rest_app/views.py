@@ -63,7 +63,7 @@ class ContenderViewSet(viewsets.ModelViewSet):
     #Note that it also responds with the entire match so the client can rebuild the entire match
     @action(detail=False, methods=['post'], serializer_class=serializers.ContenderSerializer)
     def new_contender(self, request, pk=None):
-        serializer = serializers.NonNestedContenderSerializer(data=request.data)
+        serializer = serializers.NonNestedContenderSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():
             contender = serializer.save()
             response_data = serializers.MatchSerializer(contender.match, context={'request':request}).data

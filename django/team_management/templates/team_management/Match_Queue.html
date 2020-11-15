@@ -353,6 +353,7 @@ async function new_contender(select_elem){
 	}
 
 	let response = $.post('/api/contenders/new_contender/',data=data);
+	console.log(response);
 	response.fail(function(jqXHR,textStatus, errorThrown){alert(response.responseJSON.team[0])});
 }
 

@@ -28,12 +28,21 @@ class NonNestedContenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contender
         fields = '__all__'
+    def validate_team(self, value): #validates the user either has permission or is queueing themselves
+        #the weigh in and safety check validation is directly on the Model, since it does not need the request user
+        print(self.context)
+        if not self.context['request'].user.has_perm('team_management.can_queue_all_teams'):
+            if self.context['request'].user != value.user:
+                raise serializers.ValidationError("You can only queue your own team.")
+        return value
 
 #Used for GET requests
 class ContenderSerializer(serializers.HyperlinkedModelSerializer):
     team = TeamSerializer()
     score = serializers.IntegerField(max_value=None, min_value=None, source='calculate_score', read_only=True)
     contender_position = ContenderPositionSerializer()
+
+
     class Meta:
         model = Contender
         fields = '__all__'
