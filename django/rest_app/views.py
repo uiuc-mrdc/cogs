@@ -60,7 +60,7 @@ class ContenderViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
     #custom action to use a non-nested version of the serializer, so we can POST with only the primary keys
-    #Note that it also responds with the entire match so the client can rebuild the entire match
+    #Note that it also responds with the entire match so the client can rebuild the entire match (which is non-standard for a POST)
     @action(detail=False, methods=['post'], serializer_class=serializers.NonNestedContenderSerializer)
     def new_contender(self, request, pk=None):
         serializer = serializers.NonNestedContenderSerializer(data=request.data, context={'request':request})
