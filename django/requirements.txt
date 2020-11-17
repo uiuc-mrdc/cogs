@@ -1,10 +1,11 @@
 sqlparse==0.2.4
 Django>=3.0,<4.0
 psycopg2>=2.7,<3.0
-channels>=2.3,<3.0
+channels>=3.0,<4.0
 mysqlclient>=1.0,<2.0
 channels_redis>=2.4,<3.0
 djangorestframework>=3.11,<4.0
 markdown
 django-filter
 Pillow>=8.0,<9.0
+uvicorn

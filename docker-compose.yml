@@ -18,6 +18,7 @@ services:
       - media:/media
     depends_on:
       - db                          # Tells Compose that 'db' needs to be started before 'web' can start
+    command: "uvicorn composeexample.asgi:application --host 0.0.0.0 --reload" #Overrides the Dockerfile, so we can reload during Dev
   redis:
     image: 'redis:latest'           # tells compose to use the official redis image
   nginx:

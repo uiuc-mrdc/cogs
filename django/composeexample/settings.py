@@ -75,7 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'composeexample.wsgi.application'
 
-ASGI_APPLICATION = "composeexample.routing.application"
+ASGI_APPLICATION = "composeexample.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
