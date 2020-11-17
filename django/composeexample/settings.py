@@ -142,17 +142,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/static'
 
-STATICFILES_DIRS = (
-# Put strings here, like "/home/html/static" or "C:/www/django/static".
-# Always use forward slashes, even on Windows.
-# Don't forget to use absolute paths, not relative paths.
-os.path.join(BASE_DIR, "static"),
-("icons", os.path.join('static/icons')),
-("custom_css", os.path.join('static/css')),
-)
-
-MEDIA_ROOT = os.path.join(BASE_DIR, "static", "logos")
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/media'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
