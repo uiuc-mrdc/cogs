@@ -31,7 +31,9 @@ services:
       - NGINX_HOST=localhost
       - NGINX_PORT=80
     ports:
-     - "8000:80"
+      - "8000:80"
+    depends_on: 
+      - web
 volumes:
   db:
   static:
