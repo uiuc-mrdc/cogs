@@ -4,7 +4,11 @@ ASGI config for {{ project_name }} project.
 It exposes the ASGI callable as a module-level variable named ``application``.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/{{ docs_version }}/howto/deployment/asgi/
+https://docs.djangoproject.com/en/3.1/howto/deployment/asgi/
+"""
+"""
+Also see https://channels.readthedocs.io/en/latest/deploying.html#configuring-the-asgi-application 
+    for a full example of a Django Channels asgi.py
 """
 
 import os
