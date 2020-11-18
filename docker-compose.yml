@@ -14,11 +14,27 @@ services:
     build: ./django                 # Tells Compose to build the 'web' service from ./django (with Dockerfile)
     volumes:
       - ./django:/code              # Connects ./django in this repo to /code inside the web container
-    ports:
-      - "8000:8000"                 # Binds port 8000 to container port 8000 (format "HOST:CONTAINER")
+      - static:/static
+      - media:/media
     depends_on:
       - db                          # Tells Compose that 'db' needs to be started before 'web' can start
+    command: "uvicorn composeexample.asgi:application --host 0.0.0.0 --reload" #Overrides the Dockerfile, so we can reload during Dev
   redis:
     image: 'redis:latest'           # tells compose to use the official redis image
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static:/data/static
+      - media:/data/media
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+    ports:
+      - "8000:80"
+    depends_on: 
+      - web
 volumes:
   db:
+  static:
+  media:

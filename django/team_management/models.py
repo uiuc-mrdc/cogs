@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
@@ -9,7 +8,7 @@ from django.core.exceptions import ValidationError
 class School(models.Model):
     name = models.CharField(max_length=70)
     abbreviation = models.CharField(max_length=8, default="", blank=True)
-    logo = models.ImageField(upload_to='schools', blank=True)
+    logo = models.ImageField(upload_to='logos/schools', blank=True)
     def __str__(self):
         return self.name
 
@@ -20,7 +19,7 @@ class Team(models.Model):
     abbreviation = models.CharField(max_length=8, default="", blank=True)
     weigh_in = models.BooleanField(default=False)
     safety_check = models.BooleanField(default=False)
-    logo = models.ImageField(upload_to='teams', blank=True)
+    logo = models.ImageField(upload_to='logos/teams', blank=True)
     def __str__(self):
         return self.name
 
@@ -81,49 +80,6 @@ class Contender(models.Model):
         )
     def calculate_score(self): #updates score field #Unfinished
         return 5
-'''  REDO SCORING CALCULATIONS        
-        sum = 0
-        for scoring_type in ScoringType.objects.all(): #loops through each scoring_type
-            if scoring_type.value != 0:
-                for count_mult in self.counts(scoring_type): #repeats for each multiplier level
-                    sum += scoring_type.value * count_mult[0] * count_mult[1] #value * count * multiplier
-            else:
-                sum += self.switcher.get(scoring_type.name)(self, self.counts(scoring_type)) #calls custom function if scoring_type.value == 0
-        #saves score to db
-        self.score = sum
-        self.save()
-        return sum
-
-    def brewPotion(self, countslist):
-        i=0
-        total=0
-        for count_mult in countslist:
-            while count_mult[0] > 0:
-                total += (20 + i*10) * count_mult[1] #custom formula
-                i+=1
-                count_mult[0] -= 1
-        return total
-        
-    def counts(self, scoring_type): #Outputs a list of pairs [count, multiplier] for that scoringType; Pairs come in chronological order with each multiplier level grouped
-        base = Action.objects.filter(
-                deleted = False
-            ).filter(
-                game_participant = self.id
-            ).filter(
-                scoring_type = scoring_type
-            )
-        counts_multipliers = []
-        for mults in base.values('multiplier').distinct():
-            count = base.filter(
-                    multiplier = mults['multiplier']
-                ).aggregate(Sum('value', output_field=models.IntegerField()))['value__sum'] #sums over the value field to count for regular buttons, or read a single value for others
-            counts_multipliers.append([count, mults['multiplier']])
-        return counts_multipliers
-        
-    switcher = {
-        "Brew Potion":brewPotion,
-    }
-'''
 
 class ScoringContext(models.Model):
     multiplier = models.FloatField(default=1)

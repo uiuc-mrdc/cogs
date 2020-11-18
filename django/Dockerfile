@@ -6,5 +6,6 @@ WORKDIR /code
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 COPY . /code/
-CMD python manage.py runserver 0.0.0.0:8000
-# CMD daphne -b 0.0.0.0 -p 8000 PHOAN.asgi:application
+ENTRYPOINT ["./docker-entrypoint.sh"]
+# By default, start the Gunicorn server with eight Uvicorn workers
+CMD ["gunicorn", "composeexample.asgi:application", "--bind=0.0.0.0:8000", "--workers=8", "--worker-class=uvicorn.workers.UvicornWorker"]
