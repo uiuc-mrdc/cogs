@@ -29,9 +29,12 @@ class TeamContact(models.Model):
 	#We may want to update this to match whatever texting service we use, or to be more strict
     phone_number = models.CharField(max_length=15, blank=True, validators=[RegexValidator(regex='(?:(?:(\s*\(?([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\)?\s*(?:[.-]\s*)?)([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})')])
 
+
+def default_match_time(): #remove default value once we have a way to set this better
+    return timezone.now() + timedelta(minutes=10)
 class Match(models.Model):
     special_name = models.CharField(max_length=50, default="", blank=True, help_text="i.e. Semifinal. Currently unused")
-    scheduled_start = models.DateTimeField(default = timezone.now() + timedelta(minutes=10)) #remove default value once we have a way to set this better
+    scheduled_start = models.DateTimeField(default = default_match_time) #remove default value once we have a way to set this better
     class Meta:
         verbose_name_plural = "Matches"
 
