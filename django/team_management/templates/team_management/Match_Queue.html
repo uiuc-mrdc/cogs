@@ -4,7 +4,7 @@
 	{% load static %}
 	{{ block.super }}
 	<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
-    <link rel="stylesheet" href="{% static 'team_management/GameQueue.css' %}">
+    <link rel="stylesheet" href="{% static 'team_management/Match_Queue.css' %}">
 {% endblock %}
 
 {% block body %}
@@ -21,10 +21,10 @@
 			{% endfor %}
 			<div class="column" style="width:10%">
 				{% if perms.team_management.is_judge %}
-					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<a href="{% url 'match_x' match_id=participant_list.0.game_id %}">Judging</a>
 					<br>
 				{% endif %}
-				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+				<a href="{% url 'scoreboard' match_id=participant_list.0.game_id %}">Scoreboard</a>
 			</div>
 		</div>
 	{% endif %}
@@ -63,10 +63,10 @@
 			{% endfor %}
 			<div class="column" style="width:10%">
 				{% if perms.team_management.is_judge %}
-					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<a href="{% url 'match_x' match_id=participant_list.0.game_id %}">Judging</a>
 					<br>
 				{% endif %}
-				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+				<a href="{% url 'scoreboard' match_id=participant_list.0.game_id %}">Scoreboard</a>
 			</div>
 		</div>
 	{% endfor %}
@@ -99,10 +99,10 @@
 		{% endfor %}
 		<div class="column" style="width:10%">
 			{% if perms.team_management.is_judge %}
-				<a href="{% url 'gameX' game_id=0 %}">Judging</a>
+				<a href="{% url 'match_x' match_id=0 %}">Judging</a>
 				<br>
 			{% endif %}
-			<a href="{% url 'scoreboard' game_id=0 %}">Scoreboard</a>
+			<a href="{% url 'scoreboard' match_id=0 %}">Scoreboard</a>
 		</div>
 	</div>
 	
@@ -121,10 +121,10 @@
 			
 			<div class="column" style="width:10%">
 				{% if perms.team_management.is_judge %}
-					<a href="{% url 'gameX' game_id=participant_list.0.game_id %}">Judging</a>
+					<a href="{% url 'match_x' match_id=participant_list.0.game_id %}">Judging</a>
 					<br>
 				{% endif %}
-				<a href="{% url 'scoreboard' game_id=participant_list.0.game_id %}">Scoreboard</a>
+				<a href="{% url 'scoreboard' match_id=participant_list.0.game_id %}">Scoreboard</a>
 			</div>
 		</div>
 	{% endfor %}
@@ -183,7 +183,7 @@ function startBetweenTimer(str_end_time){
 	if (betweenIntervalKey == null){
 		betweenIntervalKey = setInterval(function(){
 			now = new Date().getTime(); //miliseconds
-			time_remaining = (end_time + {{ time_between_matches }}*60*1000) - now;
+			time_remaining = (end_time + 5{{ time_between_matches }}*60*1000) - now;
 			displayTime(time_remaining, timer_elem);
 		}, 1000);
 	}
@@ -237,7 +237,7 @@ var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 var webSocket = new WebSocket(
 		ws_scheme+
         '://' + window.location.host +
-        '/ws/gameQueue');
+        '/ws/MatchQueue');
 
 webSocket.onmessage = function(e) { //Function that receives all incoming websocket data
 	var data = JSON.parse(e.data);

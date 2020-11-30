@@ -2,13 +2,13 @@
 	<head>
 		{% load static %}
 		<link rel="stylesheet" href="{% static 'team_management/TeamColors.css' %}">
-	    <link rel="stylesheet" href="{% static 'team_management/scoreboard.css' %}">
+	    <link rel="stylesheet" href="{% static 'team_management/Scoreboard.css' %}">
 		
 	</head>
 	<body>
 		<a href="/" style="opacity:0; position:fixed; width:10vw; height:10vh">Home Page</a>
-		{% if game.id > 1 %}<a href="{% url 'scoreboard' game_id=game.id|add:"-1" %}" style="opacity:0; position:fixed; bottom:0; width:10vw; height:10vh">Prev</a>{% endif %}
-		<a href="{% url 'scoreboard' game_id=game.id|add:"1" %}" style="opacity:0; position:fixed; bottom:0; right:0; width:10vw; height:10vh">Next</a>
+		{% if game.id > 1 %}<a href="{% url 'scoreboard' match_id=game.id|add:"-1" %}" style="opacity:0; position:fixed; bottom:0; width:10vw; height:10vh">Prev</a>{% endif %}
+		<a href="{% url 'scoreboard' match_id=game.id|add:"1" %}" style="opacity:0; position:fixed; bottom:0; right:0; width:10vw; height:10vh">Next</a>
 		
 		<img class="logo" src="{% static "team_management/mrdclogofull.png" %}" alt="MRDC logo">
 		<div class="column" style="width:30%">
@@ -18,7 +18,6 @@
 		<div class="column" style="position:relative; width:70%; height:{% widthratio participant_list|length 1 13 %}vh">
 		{% for participant in participant_list|dictsortreversed:"score" %}
 			<div class="team color{{ participant.color }}" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh">
-			<div class="team" id="team{{ participant.id }}" style="top: {% widthratio forloop.counter0 1 13 %}vh; background-color: {{ participant.color }}">
 				<span class="teamName">{% if participant.team.team_name|length < 25 %}{{ participant.team.team_name }}{% else %}{{ participant.team.abbr }}{% endif %}</span>
 				<span class="score" id="score{{ participant.id }}">{{ participant.score }}</span>
 			</div>
@@ -26,7 +25,6 @@
 			<h1>No Teams for Game #{{ game.id }}</h1>
 		{% endfor %}
 		</div>
-	</div>
 		
 	</body>
 	<script>

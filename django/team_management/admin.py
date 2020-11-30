@@ -1,37 +1,41 @@
+'''
+Add custome admin items where useful. For example, customize so we can edit MatchStateChangeEvent in Match
+'''
 from django.contrib import admin
-from .models import ScoringType, Team, Action, Game, GameParticipant, Phone
-
-from . import custom_config as cfg
+from .models import School, Team, TeamContact, Match, MatchStateChangeEvent, ContenderPosition, Contender, ScoringContext, ContenderContextChangeEvent, ScoringTypeGroup, ScoringType, ScoringEvent
 
 #These are default and have no special layout. All fields appear except auto-fields or fields with editable=False
-admin.site.register(ScoringType)
+admin.site.register(School)
 #admin.site.register(Team)
-admin.site.register(Action) 
-#admin.site.register(Game)
-admin.site.register(GameParticipant)
-admin.site.register(Phone)
+admin.site.register(TeamContact)
+#admin.site.register(Match)
+admin.site.register(MatchStateChangeEvent)
+admin.site.register(ContenderPosition)
+admin.site.register(Contender)
+admin.site.register(ScoringContext)
+admin.site.register(ContenderContextChangeEvent)
+admin.site.register(ScoringTypeGroup)
+admin.site.register(ScoringType)
+admin.site.register(ScoringEvent)
 
-#custom format for Game
-class ParticipantInline(admin.TabularInline):
-    model = GameParticipant
+
+
+#custom format for Match
+class ContenderInline(admin.TabularInline):
+    model = Contender
     extra = 2
-    exclude = ('score',)
-@admin.register(Game)
-class GameAdmin(admin.ModelAdmin):
-    fieldsets = [
-        ('Time Info', {'fields': ['start_time', 'end_time', 'pause_time']}),
-        ('Other', {'fields': ['finished', 'special_name']}),
-    ]
+@admin.register(Match)
+class MatchAdmin(admin.ModelAdmin):
     inlines = [
-        ParticipantInline,
+        ContenderInline,
     ]
 
 #custom format for Team
-class PhoneInline(admin.TabularInline):
-    model = Phone
+class TeamContactInline(admin.TabularInline):
+    model = TeamContact
     extra = 2
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     inlines = [
-        PhoneInline,
+        TeamContactInline,
     ]

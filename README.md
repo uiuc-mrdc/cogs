@@ -2,7 +2,7 @@
 
 This repository contains resources for building and running "Containerized Game Services," the web services for the [Midwestern Robotics Design Competition](http://mrdc.ec.illinois.edu/).
 
-For now, that's just [Django](https://www.djangoproject.com/), [MariaDB](https://mariadb.org/) and [Redis](https://redis.io/) running in [Docker Compose](https://docs.docker.com/compose/)
+For now, that's just [Django](https://www.djangoproject.com/), [MariaDB](https://mariadb.org/), [Redis](https://redis.io/), and [Nginx](https://www.nginx.com/) running in [Docker Compose](https://docs.docker.com/compose/)
 
 ## Required Software
 

@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'team_management.apps.TeamManagementConfig',
+	'rest_app.apps.RestAppConfig',
     'channels',
+	'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'composeexample.wsgi.application'
 
-ASGI_APPLICATION = "composeexample.routing.application"
+ASGI_APPLICATION = "composeexample.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
@@ -82,6 +84,11 @@ CHANNEL_LAYERS = {
             "hosts": [("redis", 6379)],
         },
     },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 
 # Database
@@ -135,16 +142,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/static'
 
-STATICFILES_DIRS = (
-# Put strings here, like "/home/html/static" or "C:/www/django/static".
-# Always use forward slashes, even on Windows.
-# Don't forget to use absolute paths, not relative paths.
-os.path.join(BASE_DIR, "static"),
-("icons", os.path.join('static/icons')),
-("custom_css", os.path.join('static/css')),
-
-)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/media'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
