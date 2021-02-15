@@ -181,7 +181,7 @@ async function* paginated_get(url) {
 }
 
 let contender_positions = [];
-
+00
 async function build_teams_selector(){
 	let option_string;
 	for await (const team of paginated_get('/api/available_teams/')){
@@ -203,10 +203,10 @@ $(document).ready(async function(){
 	
 	for await (let match_data of paginated_get('/api/matches/')){
 		await Promise.all([teams, positions]);//Set up both the teams and positions before building all the matches (also get match data too)
-		if (true){ //if completed - need logic
+		if (false){ //if completed - need logic
+		} else if (true){ //upcoming
 			let match_elem = build_match(match_data, 'upcoming');
 			$('#UpcomingGames').append(match_elem);
-		} else if (true){ //upcoming
 		} else { //current
 		}
 	}
@@ -219,8 +219,8 @@ function build_match(match,queue){ //returns entire match DOM object
 	$('#base_timer').clone().attr('id','timer'+ match.id.slice(5)).appendTo($match_div);
 	//Build contenders
 	let remaining_positions = contender_positions.slice();
-	for (var i=0; i<4; i++){ //This 4 should be retrieved from the API somehow if we want to support different #s of teams in a match
-		if (match.contenders[i] == null && (queue === 'completed' || queue === 'current')) {//no contender, build empty game if necessary
+	for (var i=0; i<contender_positions.length; i++){
+		if (match.contenders[i] == null && (queue != 'upcoming')) {//no contender, build empty contender spaces only if in the upcoming matches
 			console.log('i = ' + i)
 			break;
 		}
