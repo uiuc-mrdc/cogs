@@ -14,7 +14,7 @@
             <!--Custom Styles-->
 			{% load static %}
 			{% block css %}
-            <link rel="icon" href="{% static 'icons/serve.ico' %}">
+            <link rel="icon" href="{% static 'team_management/icons/serve.ico' %}">
 			{% endblock %}
             <!--/Custom-->
 
@@ -23,7 +23,7 @@
     <body>
 			{% block navbar %}
             <nav class="navbar navbar-dark navbar-expand-lg navbar-light bg-dark justify-content-between">
-                    <a class="navbar-brand" href="/"><img style="height: 45px; width: 45px; margin-right: 5px" src="{% static '/icons/serve.ico' %}"></img>MRDC Game Serve</a>
+                    <a class="navbar-brand" href="/"><img style="height: 45px; width: 45px; margin-right: 5px" src="{% static '/team_management/icons/serve.ico' %}"></img>MRDC Game Serve</a>
 
                     <!-- <a class="navbar-brand" href="#">MRDC Game Serve</a> -->
                     
@@ -37,7 +37,7 @@
                           <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
 						<li class="nav-item">
-							{% url 'game_queue' as game_queue_url %}
+							{% url 'match_queue' as game_queue_url %}
                           <a class="nav-link {% if request.path == game_queue_url %}active{% endif %}" href="{{ game_queue_url }}">Game Queue</a>
                         </li>
 						<li class="nav-item">
@@ -48,6 +48,16 @@
 						<li class="nav-item">
 							{% url 'weigh_in' as weigh_in_url %}
                           <a class="nav-link {% if request.path == weigh_in_url %}active{% endif %}" href="{{ weigh_in_url }}">Weigh In</a>
+                        </li>
+						{% endif %}
+						{% if user.is_superuser %}
+						<li class="nav-item">
+							{% url 'admin:index' as admin_url %}
+                          <a class="nav-link" href="{{ admin_url }}">Admin</a>
+                        </li>
+						<li class="nav-item">
+							{% url 'api-root' as api_url %}
+                          <a class="nav-link" href="{{ api_url }}">API</a>
                         </li>
 						{% endif %}
 					  </ul>
